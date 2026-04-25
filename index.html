@@ -1,1 +1,717 @@
-<h1>project2 from docker</h2>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Git & Docker Command Reference</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;600;800&family=Syne:wght@400;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0c10;
+    --surface: #111318;
+    --surface2: #181c24;
+    --border: #1e2330;
+    --git: #f05033;
+    --git-glow: rgba(240,80,51,0.18);
+    --docker: #2496ed;
+    --docker-glow: rgba(36,150,237,0.18);
+    --text: #e8eaf0;
+    --muted: #6b7280;
+    --accent: #f0e030;
+    --code-bg: #0d1017;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Syne', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Grid background */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .wrapper {
+    position: relative;
+    z-index: 1;
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 24px 80px;
+  }
+
+  /* Hero Header */
+  header {
+    text-align: center;
+    padding: 70px 0 50px;
+    position: relative;
+  }
+
+  header::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 50%;
+    transform: translateX(-50%);
+    width: 200px; height: 1px;
+    background: linear-gradient(90deg, transparent, var(--muted), transparent);
+  }
+
+  .header-badge {
+    display: inline-block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--accent);
+    border: 1px solid rgba(240,224,48,0.3);
+    padding: 5px 16px;
+    border-radius: 2px;
+    margin-bottom: 28px;
+    animation: fadeIn 0.6s ease;
+  }
+
+  h1 {
+    font-size: clamp(2.8rem, 6vw, 5rem);
+    font-weight: 800;
+    line-height: 1.05;
+    letter-spacing: -2px;
+    animation: slideUp 0.7s ease both;
+  }
+
+  .title-git { color: var(--git); }
+  .title-amp { color: var(--muted); margin: 0 16px; }
+  .title-docker { color: var(--docker); }
+
+  .subtitle {
+    margin-top: 18px;
+    color: var(--muted);
+    font-size: 1rem;
+    font-weight: 400;
+    animation: slideUp 0.8s 0.1s ease both;
+  }
+
+  /* Tab Nav */
+  .tab-nav {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    margin: 50px 0 40px;
+    animation: fadeIn 0.8s 0.2s ease both;
+  }
+
+  .tab-btn {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 28px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--muted);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: all 0.25s;
+    text-transform: uppercase;
+  }
+
+  .tab-btn:hover { border-color: var(--muted); color: var(--text); }
+  .tab-btn.active-git { border-color: var(--git); color: var(--git); background: var(--git-glow); }
+  .tab-btn.active-docker { border-color: var(--docker); color: var(--docker); background: var(--docker-glow); }
+
+  .tab-icon { font-size: 18px; }
+
+  /* Sections */
+  .section { display: none; animation: fadeIn 0.4s ease; }
+  .section.active { display: block; }
+
+  .section-intro {
+    text-align: center;
+    margin-bottom: 40px;
+    padding: 24px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--surface);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    color: var(--muted);
+  }
+
+  /* Command Grid */
+  .category-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(420px, 1fr));
+    gap: 20px;
+  }
+
+  .category-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+    transition: border-color 0.2s, transform 0.2s;
+  }
+
+  .category-card:hover {
+    transform: translateY(-2px);
+  }
+
+  .git-section .category-card:hover { border-color: rgba(240,80,51,0.4); }
+  .docker-section .category-card:hover { border-color: rgba(36,150,237,0.4); }
+
+  .card-header {
+    padding: 14px 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .git-section .card-header { background: linear-gradient(90deg, var(--git-glow), transparent); }
+  .docker-section .card-header { background: linear-gradient(90deg, var(--docker-glow), transparent); }
+
+  .card-icon { font-size: 18px; }
+
+  .card-title {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+
+  .git-section .card-title { color: var(--git); }
+  .docker-section .card-title { color: var(--docker); }
+
+  .command-list { padding: 12px 0; }
+
+  .command-item {
+    padding: 10px 20px;
+    border-bottom: 1px solid rgba(255,255,255,0.03);
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 4px;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+
+  .command-item:last-child { border-bottom: none; }
+  .command-item:hover { background: var(--surface2); }
+
+  .cmd-code {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .git-section .cmd-code { color: #ffa991; }
+  .docker-section .cmd-code { color: #7dc8ff; }
+
+  .cmd-desc {
+    font-size: 12px;
+    color: var(--muted);
+    font-family: 'JetBrains Mono', monospace;
+    padding-left: 2px;
+  }
+
+  .tag {
+    display: inline-block;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    padding: 2px 6px;
+    border-radius: 3px;
+    text-transform: uppercase;
+    vertical-align: middle;
+  }
+
+  .tag-danger { background: rgba(239,68,68,0.2); color: #f87171; }
+  .tag-new    { background: rgba(34,197,94,0.2); color: #4ade80; }
+  .tag-pro    { background: rgba(168,85,247,0.2); color: #c084fc; }
+
+  /* Copy toast */
+  .toast {
+    position: fixed;
+    bottom: 30px; right: 30px;
+    background: #1a1f2e;
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    padding: 10px 18px;
+    border-radius: 6px;
+    opacity: 0;
+    transform: translateY(10px);
+    transition: all 0.3s;
+    pointer-events: none;
+    z-index: 999;
+  }
+  .toast.show { opacity: 1; transform: translateY(0); }
+
+  /* Search */
+  .search-wrap {
+    position: relative;
+    max-width: 500px;
+    margin: 0 auto 40px;
+    animation: fadeIn 0.8s 0.3s ease both;
+  }
+
+  .search-wrap input {
+    width: 100%;
+    padding: 13px 20px 13px 44px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--text);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  .search-wrap input:focus { border-color: var(--muted); }
+  .search-wrap input::placeholder { color: var(--muted); }
+
+  .search-icon {
+    position: absolute;
+    left: 14px; top: 50%;
+    transform: translateY(-50%);
+    color: var(--muted);
+    font-size: 16px;
+  }
+
+  /* Stats bar */
+  .stats-bar {
+    display: flex;
+    justify-content: center;
+    gap: 32px;
+    margin-bottom: 40px;
+    flex-wrap: wrap;
+  }
+
+  .stat {
+    text-align: center;
+    animation: fadeIn 0.8s 0.35s ease both;
+  }
+
+  .stat-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 1.8rem;
+    font-weight: 800;
+    display: block;
+  }
+
+  .stat-label {
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  .stat-git .stat-num { color: var(--git); }
+  .stat-docker .stat-num { color: var(--docker); }
+  .stat-total .stat-num { color: var(--accent); }
+
+  /* Keyframes */
+  @keyframes fadeIn { from { opacity:0 } to { opacity:1 } }
+  @keyframes slideUp { from { opacity:0; transform:translateY(20px) } to { opacity:1; transform:none } }
+
+  /* Responsive */
+  @media (max-width: 700px) {
+    .category-grid { grid-template-columns: 1fr; }
+    .stats-bar { gap: 20px; }
+    h1 { font-size: 2.2rem; letter-spacing: -1px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="wrapper">
+  <header>
+    <div class="header-badge">// Command Reference v2.0</div>
+    <h1>
+      <span class="title-git">Git</span>
+      <span class="title-amp">&</span>
+      <span class="title-docker">Docker</span>
+    </h1>
+    <p class="subtitle">Complete cheatsheet — click any command to copy</p>
+  </header>
+
+  <div class="stats-bar">
+    <div class="stat stat-git"><span class="stat-num">50+</span><span class="stat-label">Git Commands</span></div>
+    <div class="stat stat-total"><span class="stat-num">100+</span><span class="stat-label">Total Commands</span></div>
+    <div class="stat stat-docker"><span class="stat-num">55+</span><span class="stat-label">Docker Commands</span></div>
+  </div>
+
+  <div class="search-wrap">
+    <span class="search-icon">⌕</span>
+    <input type="text" id="searchInput" placeholder="Search commands..." oninput="filterCommands(this.value)">
+  </div>
+
+  <div class="tab-nav">
+    <button class="tab-btn active-git" onclick="showTab('git', this)">
+      <span class="tab-icon">⎇</span> Git Commands
+    </button>
+    <button class="tab-btn" onclick="showTab('docker', this)">
+      <span class="tab-icon">🐳</span> Docker Commands
+    </button>
+  </div>
+
+  <!-- GIT SECTION -->
+  <div id="git-section" class="section git-section active">
+    <div class="category-grid" id="git-grid"></div>
+  </div>
+
+  <!-- DOCKER SECTION -->
+  <div id="docker-section" class="section docker-section">
+    <div class="category-grid" id="docker-grid"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast">📋 Copied to clipboard!</div>
+
+<script>
+const gitData = [
+  {
+    icon: "🚀", title: "Setup & Config",
+    commands: [
+      { cmd: "git config --global user.name \"Name\"", desc: "Set global username" },
+      { cmd: "git config --global user.email \"email@x.com\"", desc: "Set global email" },
+      { cmd: "git config --global core.editor \"code\"", desc: "Set default editor to VS Code" },
+      { cmd: "git config --list", desc: "List all config settings" },
+      { cmd: "git config --global alias.st status", desc: "Create command alias" },
+      { cmd: "git config --global color.ui auto", desc: "Enable colored output" },
+    ]
+  },
+  {
+    icon: "📁", title: "Initialize & Clone",
+    commands: [
+      { cmd: "git init", desc: "Initialize a new local repository" },
+      { cmd: "git init <directory>", desc: "Init repo in a specific folder" },
+      { cmd: "git clone <url>", desc: "Clone a remote repository" },
+      { cmd: "git clone <url> <folder>", desc: "Clone into a named folder" },
+      { cmd: "git clone --depth 1 <url>", desc: "Shallow clone (latest commit only)" },
+      { cmd: "git clone --branch <name> <url>", desc: "Clone a specific branch" },
+    ]
+  },
+  {
+    icon: "📸", title: "Staging & Commits",
+    commands: [
+      { cmd: "git status", desc: "Show working tree status" },
+      { cmd: "git add <file>", desc: "Stage a specific file" },
+      { cmd: "git add .", desc: "Stage all changes" },
+      { cmd: "git add -p", desc: "Interactively stage chunks" },
+      { cmd: "git commit -m \"message\"", desc: "Commit with a message" },
+      { cmd: "git commit -am \"message\"", desc: "Stage tracked files & commit" },
+      { cmd: "git commit --amend", desc: "Modify the last commit" },
+      { cmd: "git commit --amend --no-edit", desc: "Amend without changing message" },
+    ]
+  },
+  {
+    icon: "🌿", title: "Branching",
+    commands: [
+      { cmd: "git branch", desc: "List all local branches" },
+      { cmd: "git branch -a", desc: "List local and remote branches" },
+      { cmd: "git branch <name>", desc: "Create a new branch" },
+      { cmd: "git checkout <branch>", desc: "Switch to a branch" },
+      { cmd: "git checkout -b <branch>", desc: "Create and switch to branch" },
+      { cmd: "git switch <branch>", desc: "Switch branch (modern syntax)" },
+      { cmd: "git switch -c <branch>", desc: "Create and switch (modern)" },
+      { cmd: "git branch -d <branch>", desc: "Delete a merged branch" },
+      { cmd: "git branch -D <branch>", desc: "Force-delete a branch", tag: "danger" },
+      { cmd: "git branch -m <old> <new>", desc: "Rename a branch" },
+    ]
+  },
+  {
+    icon: "🔀", title: "Merging & Rebasing",
+    commands: [
+      { cmd: "git merge <branch>", desc: "Merge branch into current" },
+      { cmd: "git merge --no-ff <branch>", desc: "Merge with a merge commit" },
+      { cmd: "git merge --squash <branch>", desc: "Squash all commits into one" },
+      { cmd: "git merge --abort", desc: "Abort a conflicted merge" },
+      { cmd: "git rebase <branch>", desc: "Rebase current onto branch" },
+      { cmd: "git rebase -i HEAD~N", desc: "Interactive rebase last N commits", tag: "pro" },
+      { cmd: "git rebase --abort", desc: "Abort in-progress rebase" },
+      { cmd: "git rebase --continue", desc: "Continue after resolving conflicts" },
+      { cmd: "git cherry-pick <hash>", desc: "Apply a specific commit" },
+    ]
+  },
+  {
+    icon: "🌐", title: "Remote Operations",
+    commands: [
+      { cmd: "git remote -v", desc: "List remote connections" },
+      { cmd: "git remote add origin <url>", desc: "Add a remote" },
+      { cmd: "git remote remove <name>", desc: "Remove a remote" },
+      { cmd: "git remote rename <old> <new>", desc: "Rename a remote" },
+      { cmd: "git fetch", desc: "Download changes without merging" },
+      { cmd: "git fetch --all", desc: "Fetch from all remotes" },
+      { cmd: "git pull", desc: "Fetch and merge from remote" },
+      { cmd: "git pull --rebase", desc: "Pull with rebase instead of merge" },
+      { cmd: "git push origin <branch>", desc: "Push branch to remote" },
+      { cmd: "git push -u origin <branch>", desc: "Push and set upstream" },
+      { cmd: "git push --force-with-lease", desc: "Safe force push", tag: "pro" },
+      { cmd: "git push origin --delete <branch>", desc: "Delete remote branch", tag: "danger" },
+    ]
+  },
+  {
+    icon: "📜", title: "Log & History",
+    commands: [
+      { cmd: "git log", desc: "Show full commit history" },
+      { cmd: "git log --oneline", desc: "Compact one-line log" },
+      { cmd: "git log --graph --oneline --all", desc: "Visual branch graph" },
+      { cmd: "git log -n 5", desc: "Show last 5 commits" },
+      { cmd: "git log --author=\"name\"", desc: "Filter by author" },
+      { cmd: "git log --since=\"2 weeks ago\"", desc: "Filter by date" },
+      { cmd: "git diff", desc: "Show unstaged changes" },
+      { cmd: "git diff --staged", desc: "Show staged changes" },
+      { cmd: "git diff <branch1>..<branch2>", desc: "Compare two branches" },
+      { cmd: "git show <hash>", desc: "Show a specific commit" },
+      { cmd: "git blame <file>", desc: "Show who changed each line" },
+    ]
+  },
+  {
+    icon: "💾", title: "Stash",
+    commands: [
+      { cmd: "git stash", desc: "Stash current changes" },
+      { cmd: "git stash push -m \"label\"", desc: "Stash with a label" },
+      { cmd: "git stash list", desc: "List all stashes" },
+      { cmd: "git stash pop", desc: "Apply and drop latest stash" },
+      { cmd: "git stash apply stash@{n}", desc: "Apply specific stash" },
+      { cmd: "git stash drop stash@{n}", desc: "Delete a specific stash" },
+      { cmd: "git stash clear", desc: "Remove all stashes", tag: "danger" },
+    ]
+  },
+  {
+    icon: "↩️", title: "Undo & Reset",
+    commands: [
+      { cmd: "git restore <file>", desc: "Discard working dir changes" },
+      { cmd: "git restore --staged <file>", desc: "Unstage a file" },
+      { cmd: "git reset HEAD~1", desc: "Undo last commit, keep changes" },
+      { cmd: "git reset --soft HEAD~1", desc: "Undo commit, keep staged" },
+      { cmd: "git reset --hard HEAD~1", desc: "Undo commit and changes", tag: "danger" },
+      { cmd: "git revert <hash>", desc: "Create a revert commit" },
+      { cmd: "git clean -fd", desc: "Remove untracked files/dirs", tag: "danger" },
+    ]
+  },
+  {
+    icon: "🏷️", title: "Tags",
+    commands: [
+      { cmd: "git tag", desc: "List all tags" },
+      { cmd: "git tag <v1.0.0>", desc: "Create a lightweight tag" },
+      { cmd: "git tag -a v1.0.0 -m \"msg\"", desc: "Create annotated tag" },
+      { cmd: "git push origin <tag>", desc: "Push a tag to remote" },
+      { cmd: "git push --tags", desc: "Push all tags" },
+      { cmd: "git tag -d <tag>", desc: "Delete local tag" },
+      { cmd: "git push origin --delete <tag>", desc: "Delete remote tag", tag: "danger" },
+    ]
+  },
+];
+
+const dockerData = [
+  {
+    icon: "🐳", title: "Images",
+    commands: [
+      { cmd: "docker images", desc: "List all local images" },
+      { cmd: "docker pull <image>", desc: "Pull an image from registry" },
+      { cmd: "docker pull <image>:<tag>", desc: "Pull a specific image tag" },
+      { cmd: "docker build -t <name> .", desc: "Build image from Dockerfile" },
+      { cmd: "docker build -t <name>:<tag> .", desc: "Build with a specific tag" },
+      { cmd: "docker build --no-cache -t <name> .", desc: "Build without cache" },
+      { cmd: "docker rmi <image>", desc: "Remove an image" },
+      { cmd: "docker rmi $(docker images -q)", desc: "Remove all images", tag: "danger" },
+      { cmd: "docker image prune", desc: "Remove dangling images" },
+      { cmd: "docker image prune -a", desc: "Remove all unused images", tag: "danger" },
+      { cmd: "docker tag <src> <target>", desc: "Tag an image" },
+      { cmd: "docker push <image>", desc: "Push image to registry" },
+      { cmd: "docker save -o out.tar <img>", desc: "Save image to tar file" },
+      { cmd: "docker load -i out.tar", desc: "Load image from tar file" },
+      { cmd: "docker history <image>", desc: "Show image layer history" },
+      { cmd: "docker inspect <image>", desc: "Inspect image metadata" },
+    ]
+  },
+  {
+    icon: "📦", title: "Containers — Run",
+    commands: [
+      { cmd: "docker run <image>", desc: "Run a container" },
+      { cmd: "docker run -d <image>", desc: "Run in detached (background) mode" },
+      { cmd: "docker run -it <image> bash", desc: "Run with interactive shell" },
+      { cmd: "docker run --name <name> <image>", desc: "Assign a container name" },
+      { cmd: "docker run -p 8080:80 <image>", desc: "Map host:container ports" },
+      { cmd: "docker run -v /host:/container <img>", desc: "Mount a volume" },
+      { cmd: "docker run -e KEY=value <image>", desc: "Set environment variable" },
+      { cmd: "docker run --env-file .env <image>", desc: "Load env vars from file" },
+      { cmd: "docker run --rm <image>", desc: "Auto-remove on exit" },
+      { cmd: "docker run --network <net> <img>", desc: "Connect to a network" },
+      { cmd: "docker run --cpus=\"0.5\" <image>", desc: "Limit CPU usage" },
+      { cmd: "docker run -m 256m <image>", desc: "Limit memory to 256 MB" },
+    ]
+  },
+  {
+    icon: "⚙️", title: "Containers — Manage",
+    commands: [
+      { cmd: "docker ps", desc: "List running containers" },
+      { cmd: "docker ps -a", desc: "List all containers (incl. stopped)" },
+      { cmd: "docker start <container>", desc: "Start a stopped container" },
+      { cmd: "docker stop <container>", desc: "Gracefully stop a container" },
+      { cmd: "docker restart <container>", desc: "Restart a container" },
+      { cmd: "docker kill <container>", desc: "Force-kill a container", tag: "danger" },
+      { cmd: "docker rm <container>", desc: "Remove a stopped container" },
+      { cmd: "docker rm -f <container>", desc: "Force-remove running container", tag: "danger" },
+      { cmd: "docker rm $(docker ps -aq)", desc: "Remove all containers", tag: "danger" },
+      { cmd: "docker pause <container>", desc: "Pause container processes" },
+      { cmd: "docker unpause <container>", desc: "Unpause container processes" },
+      { cmd: "docker rename <old> <new>", desc: "Rename a container" },
+      { cmd: "docker update --cpus 1 <ctr>", desc: "Update container resource limits" },
+    ]
+  },
+  {
+    icon: "🔍", title: "Container Inspection",
+    commands: [
+      { cmd: "docker logs <container>", desc: "View container logs" },
+      { cmd: "docker logs -f <container>", desc: "Follow logs in real time" },
+      { cmd: "docker logs --tail 50 <ctr>", desc: "Show last 50 log lines" },
+      { cmd: "docker inspect <container>", desc: "Detailed container info (JSON)" },
+      { cmd: "docker stats", desc: "Live resource usage of containers" },
+      { cmd: "docker top <container>", desc: "List running processes in container" },
+      { cmd: "docker port <container>", desc: "Show port mappings" },
+      { cmd: "docker diff <container>", desc: "Show filesystem changes" },
+    ]
+  },
+  {
+    icon: "💻", title: "Exec & Copy",
+    commands: [
+      { cmd: "docker exec -it <ctr> bash", desc: "Open shell in running container" },
+      { cmd: "docker exec -it <ctr> sh", desc: "Open sh shell (for alpine)" },
+      { cmd: "docker exec <ctr> <command>", desc: "Run a command in container" },
+      { cmd: "docker cp <ctr>:/path ./local", desc: "Copy from container to host" },
+      { cmd: "docker cp ./local <ctr>:/path", desc: "Copy from host to container" },
+      { cmd: "docker commit <ctr> <img:tag>", desc: "Create image from container" },
+    ]
+  },
+  {
+    icon: "🔗", title: "Networks",
+    commands: [
+      { cmd: "docker network ls", desc: "List all networks" },
+      { cmd: "docker network create <name>", desc: "Create a custom network" },
+      { cmd: "docker network inspect <name>", desc: "Inspect network details" },
+      { cmd: "docker network connect <net> <ctr>", desc: "Connect container to network" },
+      { cmd: "docker network disconnect <net> <ctr>", desc: "Disconnect from network" },
+      { cmd: "docker network rm <name>", desc: "Remove a network" },
+      { cmd: "docker network prune", desc: "Remove unused networks" },
+    ]
+  },
+  {
+    icon: "💾", title: "Volumes",
+    commands: [
+      { cmd: "docker volume ls", desc: "List all volumes" },
+      { cmd: "docker volume create <name>", desc: "Create a named volume" },
+      { cmd: "docker volume inspect <name>", desc: "Inspect a volume" },
+      { cmd: "docker volume rm <name>", desc: "Remove a volume" },
+      { cmd: "docker volume prune", desc: "Remove all unused volumes", tag: "danger" },
+    ]
+  },
+  {
+    icon: "🧹", title: "System & Cleanup",
+    commands: [
+      { cmd: "docker system df", desc: "Show disk usage by Docker" },
+      { cmd: "docker system info", desc: "Display system-wide info" },
+      { cmd: "docker system prune", desc: "Remove all unused resources" },
+      { cmd: "docker system prune -a", desc: "Remove all unused incl. images", tag: "danger" },
+      { cmd: "docker system prune --volumes", desc: "Prune including volumes", tag: "danger" },
+      { cmd: "docker container prune", desc: "Remove stopped containers" },
+      { cmd: "docker image prune -a", desc: "Remove unused images", tag: "danger" },
+    ]
+  },
+  {
+    icon: "🎼", title: "Docker Compose",
+    commands: [
+      { cmd: "docker compose up", desc: "Start services from compose file" },
+      { cmd: "docker compose up -d", desc: "Start services in detached mode" },
+      { cmd: "docker compose up --build", desc: "Rebuild images before starting" },
+      { cmd: "docker compose down", desc: "Stop and remove containers" },
+      { cmd: "docker compose down -v", desc: "Down and remove volumes", tag: "danger" },
+      { cmd: "docker compose ps", desc: "List compose services" },
+      { cmd: "docker compose logs -f", desc: "Follow logs for all services" },
+      { cmd: "docker compose exec <svc> sh", desc: "Shell into a service" },
+      { cmd: "docker compose build", desc: "Build compose images" },
+      { cmd: "docker compose pull", desc: "Pull compose images" },
+      { cmd: "docker compose restart <svc>", desc: "Restart a service" },
+      { cmd: "docker compose stop <svc>", desc: "Stop a service" },
+      { cmd: "docker compose scale svc=3", desc: "Scale a service to 3 replicas" },
+      { cmd: "docker compose config", desc: "Validate compose file" },
+    ]
+  },
+];
+
+function buildGrid(data, gridId) {
+  const grid = document.getElementById(gridId);
+  data.forEach(cat => {
+    const card = document.createElement('div');
+    card.className = 'category-card';
+    const header = `<div class="card-header"><span class="card-icon">${cat.icon}</span><span class="card-title">${cat.title}</span></div>`;
+    const cmds = cat.commands.map(c => {
+      const tag = c.tag ? `<span class="tag tag-${c.tag}">${c.tag}</span>` : '';
+      return `<div class="command-item" onclick="copyCmd('${c.cmd.replace(/'/g,"\\'")}')">
+        <div class="cmd-code">${c.cmd} ${tag}</div>
+        <div class="cmd-desc">// ${c.desc}</div>
+      </div>`;
+    }).join('');
+    card.innerHTML = header + `<div class="command-list">${cmds}</div>`;
+    grid.appendChild(card);
+  });
+}
+
+function showTab(tab, btn) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.className = 'tab-btn');
+  document.getElementById(tab + '-section').classList.add('active');
+  btn.className = `tab-btn active-${tab}`;
+}
+
+function copyCmd(cmd) {
+  navigator.clipboard.writeText(cmd).then(() => {
+    const toast = document.getElementById('toast');
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 2000);
+  });
+}
+
+function filterCommands(query) {
+  const q = query.toLowerCase();
+  document.querySelectorAll('.command-item').forEach(item => {
+    const text = item.textContent.toLowerCase();
+    item.style.display = text.includes(q) ? '' : 'none';
+  });
+  // Show all cards
+  document.querySelectorAll('.category-card').forEach(card => {
+    const visible = [...card.querySelectorAll('.command-item')].some(i => i.style.display !== 'none');
+    card.style.display = visible ? '' : 'none';
+  });
+}
+
+buildGrid(gitData, 'git-grid');
+buildGrid(dockerData, 'docker-grid');
+</script>
+</body>
+</html>
