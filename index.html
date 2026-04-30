@@ -2,706 +2,380 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Git & Docker Command Reference</title>
-<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;600;800&family=Syne:wght@400;700;800&display=swap" rel="stylesheet">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Dev Command Notes</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --bg: #0a0c10;
-    --surface: #111318;
-    --surface2: #181c24;
-b11efe15e823    --border: #1e2330;
-    --git: #f05033;
-    --git-glow: rgba(240,80,51,0.18);
-    --docker: #2496ed;
-    --docker-glow: rgba(36,150,237,0.18);
-    --text: #e8eaf0;
-    --muted: #6b7280;
-    --accent: #f0e030;
-    --cmd-fixed-git: #ffa991;
-    --cmd-var-git: #ffe066;
-    --cmd-fixed-docker: #7dc8ff;
-    --cmd-var-docker: #a8ffb0;
-    --example-color: #b39dff;
-  }
+:root {
+  --bg:#0d0f14; --surface:#13161e; --surface2:#1a1e2a; --border:#252a38;
+  --linux:#f7b731; --linux-dim:rgba(247,183,49,0.1); --linux-b:rgba(247,183,49,0.2);
+  --docker:#2496ed; --docker-dim:rgba(36,150,237,0.1); --docker-b:rgba(36,150,237,0.2);
+  --git:#f05033; --git-dim:rgba(240,80,51,0.1); --git-b:rgba(240,80,51,0.2);
+  --text:#e8eaf0; --text2:#a0aab8; --muted:#555d6e; --code-bg:#0a0c10;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html{scroll-behavior:smooth;}
+body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;line-height:1.5;overflow-x:hidden;}
 
-  * { box-sizing: border-box; margin: 0; padding: 0; }
+/* ── COMPACT HEADER ── */
+header{
+  position:sticky;top:0;z-index:200;
+  background:rgba(13,15,20,0.97);
+  backdrop-filter:blur(16px);
+  border-bottom:1px solid var(--border);
+  padding:10px 14px 0;
+}
+.header-row1{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+.logo{display:flex;align-items:center;gap:7px;flex-shrink:0;}
+.logo-icon{width:28px;height:28px;border-radius:7px;background:linear-gradient(135deg,var(--linux),var(--docker),var(--git));display:flex;align-items:center;justify-content:center;font-size:13px;}
+.logo h1{font-size:.95rem;font-weight:800;letter-spacing:-.02em;background:linear-gradient(90deg,var(--linux),var(--docker),var(--git));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;white-space:nowrap;}
+.search-box{flex:1;max-width:360px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:7px 12px 7px 30px;font-family:'JetBrains Mono',monospace;font-size:.78rem;color:var(--text);outline:none;transition:border-color .2s;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='13' height='13' viewBox='0 0 24 24' fill='none' stroke='%23555d6e' stroke-width='2.5'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cpath d='m21 21-4.35-4.35'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:10px center;}
+.search-box:focus{border-color:var(--docker);}
+.search-box::placeholder{color:var(--muted);}
 
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: 'Syne', sans-serif;
-    min-height: 100vh;
-    overflow-x: hidden;
-  }
+/* Tab bar */
+.tab-nav{display:flex;gap:2px;}
+.tab-btn{font-family:'JetBrains Mono',monospace;font-size:.76rem;font-weight:600;padding:8px 14px 10px;border:none;border-bottom:2px solid transparent;background:transparent;color:var(--muted);cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:6px;border-radius:6px 6px 0 0;position:relative;top:1px;touch-action:manipulation;}
+.tab-btn:hover{color:var(--text2);}
+.tab-btn .dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;}
+.tab-btn[data-tab="linux"] .dot{background:var(--linux);}
+.tab-btn[data-tab="docker"] .dot{background:var(--docker);}
+.tab-btn[data-tab="git"] .dot{background:var(--git);}
+.tab-btn.active[data-tab="linux"]{color:var(--linux);border-bottom-color:var(--linux);}
+.tab-btn.active[data-tab="docker"]{color:var(--docker);border-bottom-color:var(--docker);}
+.tab-btn.active[data-tab="git"]{color:var(--git);border-bottom-color:var(--git);}
+.tab-count{font-size:.62rem;padding:1px 5px;border-radius:10px;background:var(--surface2);color:var(--muted);}
+.tab-btn.active[data-tab="linux"] .tab-count{background:var(--linux-dim);color:var(--linux);}
+.tab-btn.active[data-tab="docker"] .tab-count{background:var(--docker-dim);color:var(--docker);}
+.tab-btn.active[data-tab="git"] .tab-count{background:var(--git-dim);color:var(--git);}
 
-  body::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background-image:
-      linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
-    background-size: 40px 40px;
-    pointer-events: none;
-    z-index: 0;
-  }
+/* ── MAIN ── */
+main{max-width:1200px;margin:0 auto;padding:18px 14px 90px;}
+.tab-content{display:none;}
+.tab-content.active{display:block;animation:fadeUp .25s ease;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
 
-  .wrapper {
-    position: relative;
-    z-index: 1;
-    max-width: 1400px;
-    margin: 0 auto;
-    padding: 0 24px 80px;
-  }
+/* Section hero */
+.section-hero{display:flex;align-items:center;gap:12px;padding:14px 16px;border-radius:12px;margin-bottom:18px;border:1px solid var(--border);}
+.linux .section-hero{background:linear-gradient(135deg,var(--linux-dim),transparent);border-color:var(--linux-b);}
+.docker .section-hero{background:linear-gradient(135deg,var(--docker-dim),transparent);border-color:var(--docker-b);}
+.git .section-hero{background:linear-gradient(135deg,var(--git-dim),transparent);border-color:var(--git-b);}
+.section-emoji{font-size:1.8rem;line-height:1;flex-shrink:0;}
+.section-hero h2{font-size:1.1rem;font-weight:800;letter-spacing:-.02em;}
+.section-hero p{color:var(--text2);font-size:.78rem;margin-top:2px;}
 
-  header {
-    text-align: center;
-    padding: 60px 0 40px;
-    position: relative;
-  }
+/* Category */
+.category{margin-bottom:20px;}
+.category-label{font-family:'JetBrains Mono',monospace;font-size:.63rem;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);margin-bottom:8px;display:flex;align-items:center;gap:8px;}
+.category-label::after{content:'';flex:1;height:1px;background:var(--border);}
 
-  header::after {
-    content: '';
-    position: absolute;
-    bottom: 0; left: 50%;
-    transform: translateX(-50%);
-    width: 200px; height: 1px;
-    background: linear-gradient(90deg, transparent, var(--muted), transparent);
-  }
+/* Grid */
+.cmd-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:8px;}
 
-  .header-badge {
-    display: inline-block;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 11px;
-    font-weight: 600;
-    letter-spacing: 3px;
-    text-transform: uppercase;
-    color: var(--accent);
-    border: 1px solid rgba(240,224,48,0.3);
-    padding: 5px 16px;
-    border-radius: 2px;
-    margin-bottom: 22px;
-    animation: fadeIn 0.6s ease;
-  }
+/* Card */
+.cmd-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:11px 13px;transition:transform .15s,border-color .15s,box-shadow .15s;}
+.cmd-card:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(0,0,0,.3);}
+.linux .cmd-card:hover{border-color:var(--linux-b);}
+.docker .cmd-card:hover{border-color:var(--docker-b);}
+.git .cmd-card:hover{border-color:var(--git-b);}
 
-  h1 {
-    font-size: clamp(2.4rem, 5vw, 4.5rem);
-    font-weight: 800;
-    line-height: 1.05;
-    letter-spacing: -2px;
-    animation: slideUp 0.7s ease both;
-  }
+.cmd-header{display:flex;align-items:flex-start;gap:6px;margin-bottom:6px;}
+.cmd-code{font-family:'JetBrains Mono',monospace;font-size:.77rem;font-weight:700;padding:3px 7px;border-radius:5px;word-break:break-all;line-height:1.5;flex:1;}
+.linux .cmd-code{background:var(--linux-dim);color:var(--linux);}
+.docker .cmd-code{background:var(--docker-dim);color:var(--docker);}
+.git .cmd-code{background:var(--git-dim);color:var(--git);}
 
-  .title-git { color: var(--git); }
-  .title-amp { color: var(--muted); margin: 0 16px; }
-  .title-docker { color: var(--docker); }
+.copy-btn{background:none;border:1px solid var(--border);border-radius:5px;color:var(--muted);cursor:pointer;padding:3px 8px;font-size:.63rem;font-family:'JetBrains Mono',monospace;white-space:nowrap;min-width:40px;text-align:center;flex-shrink:0;transition:all .15s;touch-action:manipulation;}
+.copy-btn:active{transform:scale(.94);}
+.copy-btn:hover{color:var(--text);border-color:#555;}
+.copy-btn.copied{color:#4ade80;border-color:#4ade80;}
 
-  .subtitle {
-    margin-top: 14px;
-    color: var(--muted);
-    font-size: 0.95rem;
-    animation: slideUp 0.8s 0.1s ease both;
-  }
+.cmd-desc{font-size:.79rem;color:var(--text2);line-height:1.5;}
+.cmd-desc code{font-family:'JetBrains Mono',monospace;font-size:.73rem;color:var(--text);background:var(--code-bg);padding:1px 4px;border-radius:3px;}
 
-  .legend {
-    display: flex;
-    justify-content: center;
-    gap: 20px;
-    flex-wrap: wrap;
-    margin: 28px 0 0;
-    animation: fadeIn 0.8s 0.2s ease both;
-  }
+.cmd-example{margin-top:6px;font-family:'JetBrains Mono',monospace;font-size:.7rem;color:var(--muted);background:var(--code-bg);border-radius:5px;padding:5px 8px;border-left:2px solid var(--border);overflow-x:auto;white-space:nowrap;}
 
-  .legend-item {
-    display: flex;
-    align-items: center;
-    gap: 7px;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 11px;
-    color: var(--muted);
-  }
+.no-results{text-align:center;padding:3rem 1rem;color:var(--muted);font-size:.85rem;display:none;}
+.no-results.show{display:block;}
+.no-results-icon{font-size:2.5rem;margin-bottom:.5rem;}
 
-  .legend-dot {
-    width: 9px; height: 9px;
-    border-radius: 50%;
-    flex-shrink: 0;
-  }
+/* Scrollbar */
+::-webkit-scrollbar{width:4px;height:4px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
 
-  .stats-bar {
-    display: flex;
-    justify-content: center;
-    gap: 32px;
-    margin: 32px 0 0;
-    flex-wrap: wrap;
-    animation: fadeIn 0.8s 0.25s ease both;
-  }
+/* ── MOBILE ── */
+@media(max-width:600px){
+  header{padding:8px 12px 0;}
+  .header-row1{gap:8px;margin-bottom:8px;}
+  .logo h1{font-size:.88rem;}
+  .logo-icon{width:25px;height:25px;font-size:12px;}
+  .search-box{font-size:.75rem;padding:6px 10px 6px 28px;}
+  .tab-nav{display:none;} /* replaced by bottom nav on mobile */
+  .cmd-grid{grid-template-columns:1fr;gap:7px;}
+  .cmd-code{font-size:.73rem;}
+  .cmd-desc{font-size:.77rem;}
+  .cmd-example{font-size:.68rem;}
+  .section-hero{padding:11px 13px;}
+  .section-emoji{font-size:1.5rem;}
+  .section-hero h2{font-size:1rem;}
+  main{padding:14px 12px 90px;}
+}
 
-  .stat { text-align: center; }
-  .stat-num {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 1.7rem;
-    font-weight: 800;
-    display: block;
-  }
-  .stat-label {
-    font-size: 10px;
-    color: var(--muted);
-    letter-spacing: 1px;
-    text-transform: uppercase;
-    font-family: 'JetBrains Mono', monospace;
-  }
-  .stat-git .stat-num { color: var(--git); }
-  .stat-docker .stat-num { color: var(--docker); }
-  .stat-total .stat-num { color: var(--accent); }
-
-  .tab-nav {
-    display: flex;
-    gap: 8px;
-    justify-content: center;
-    margin: 40px 0 32px;
-    animation: fadeIn 0.8s 0.3s ease both;
-  }
-
-  .tab-btn {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 12px 28px;
-    border: 1px solid var(--border);
-    background: var(--surface);
-    color: var(--muted);
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 13px;
-    font-weight: 600;
-    letter-spacing: 1px;
-    cursor: pointer;
-    border-radius: 4px;
-    transition: all 0.25s;
-    text-transform: uppercase;
-  }
-  .tab-btn:hover { border-color: var(--muted); color: var(--text); }
-  .tab-btn.active-git { border-color: var(--git); color: var(--git); background: var(--git-glow); }
-  .tab-btn.active-docker { border-color: var(--docker); color: var(--docker); background: var(--docker-glow); }
-  .tab-icon { font-size: 18px; }
-
-  .search-wrap {
-    position: relative;
-    max-width: 480px;
-    margin: 0 auto 32px;
-    animation: fadeIn 0.8s 0.35s ease both;
-  }
-  .search-wrap input {
-    width: 100%;
-    padding: 12px 18px 12px 42px;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    color: var(--text);
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 13px;
-    outline: none;
-    transition: border-color 0.2s;
-  }
-  .search-wrap input:focus { border-color: var(--muted); }
-  .search-wrap input::placeholder { color: var(--muted); }
-  .search-icon {
-    position: absolute;
-    left: 14px; top: 50%;
-    transform: translateY(-50%);
-    color: var(--muted);
-    font-size: 15px;
-  }
-
-  .section { display: none; animation: fadeIn 0.4s ease; }
-  .section.active { display: block; }
-
-  .category-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(460px, 1fr));
-    gap: 20px;
-  }
-
-  .category-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    overflow: hidden;
-    transition: border-color 0.2s, transform 0.2s;
-  }
-  .category-card:hover { transform: translateY(-2px); }
-  .git-section .category-card:hover { border-color: rgba(240,80,51,0.4); }
-  .docker-section .category-card:hover { border-color: rgba(36,150,237,0.4); }
-
-  .card-header {
-    padding: 13px 18px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    border-bottom: 1px solid var(--border);
-  }
-  .git-section .card-header { background: linear-gradient(90deg, var(--git-glow), transparent); }
-  .docker-section .card-header { background: linear-gradient(90deg, var(--docker-glow), transparent); }
-
-  .card-icon { font-size: 17px; }
-  .card-title {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 10px;
-    font-weight: 700;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-  }
-  .git-section .card-title { color: var(--git); }
-  .docker-section .card-title { color: var(--docker); }
-
-  .command-list { padding: 8px 0; }
-
-  .command-item {
-    padding: 10px 18px 11px;
-    border-bottom: 1px solid rgba(255,255,255,0.035);
-    cursor: pointer;
-    transition: background 0.15s;
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-  }
-  .command-item:last-child { border-bottom: none; }
-  .command-item:hover { background: var(--surface2); }
-
-  /* Template line */
-  .cmd-line {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 12.5px;
-    font-weight: 600;
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 0;
-    row-gap: 2px;
-    line-height: 1.5;
-  }
-
-  /* Fixed keyword parts */
-  .git-section .cmd-fixed { color: var(--cmd-fixed-git); }
-  .docker-section .cmd-fixed { color: var(--cmd-fixed-docker); }
-
-  /* Variable (user-defined) parts */
-  .cmd-var {
-    color: var(--cmd-var-git);
-    background: rgba(255,224,102,0.08);
-    border-radius: 3px;
-    padding: 0 3px;
-  }
-  .docker-section .cmd-var {
-    color: var(--cmd-var-docker);
-    background: rgba(168,255,176,0.08);
-  }
-
-  /* Example row */
-  .cmd-example {
-    display: flex;
-    align-items: center;
-    gap: 7px;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 11.5px;
-    flex-wrap: wrap;
-    row-gap: 1px;
-    padding-left: 1px;
-  }
-
-  .eg-label {
-    font-size: 9px;
-    font-weight: 700;
-    letter-spacing: 1.5px;
-    text-transform: uppercase;
-    color: #333c55;
-    flex-shrink: 0;
-    background: rgba(255,255,255,0.04);
-    padding: 1px 5px;
-    border-radius: 2px;
-  }
-
-  .ex-fixed { color: #4a5370; }
-  .ex-var { color: var(--example-color); font-weight: 700; }
-
-  /* Description */
-  .cmd-desc {
-    font-size: 11px;
-    color: #404760;
-    font-family: 'JetBrains Mono', monospace;
-    padding-left: 1px;
-  }
-
-  .tag {
-    display: inline-block;
-    font-size: 9px;
-    font-weight: 700;
-    letter-spacing: 1px;
-    padding: 1px 5px;
-    border-radius: 3px;
-    text-transform: uppercase;
-    vertical-align: middle;
-    margin-left: 5px;
-    flex-shrink: 0;
-  }
-  .tag-danger { background: rgba(239,68,68,0.18); color: #f87171; }
-  .tag-pro    { background: rgba(168,85,247,0.18); color: #c084fc; }
-  .tag-new    { background: rgba(34,197,94,0.18); color: #4ade80; }
-
-  .toast {
-    position: fixed;
-    bottom: 28px; right: 28px;
-    background: #181e30;
-    border: 1px solid #2a3050;
-    color: var(--text);
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 12px;
-    padding: 10px 18px;
-    border-radius: 6px;
-    opacity: 0;
-    transform: translateY(10px);
-    transition: all 0.3s;
-    pointer-events: none;
-    z-index: 999;
-  }
-  .toast.show { opacity: 1; transform: translateY(0); }
-
-  @keyframes fadeIn { from { opacity:0 } to { opacity:1 } }
-  @keyframes slideUp { from { opacity:0; transform:translateY(20px) } to { opacity:1; transform:none } }
-
-  @media (max-width: 700px) {
-    .category-grid { grid-template-columns: 1fr; }
-    h1 { font-size: 2rem; }
-    .legend { gap: 12px; }
-  }
+/* Bottom Nav (mobile only) */
+.bottom-nav{display:none;position:fixed;bottom:0;left:0;right:0;background:rgba(13,15,20,.97);border-top:1px solid var(--border);backdrop-filter:blur(16px);z-index:300;padding:8px 0 env(safe-area-inset-bottom,10px);}
+@media(max-width:600px){.bottom-nav{display:flex;}}
+.bn-btn{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;background:none;border:none;color:var(--muted);cursor:pointer;font-family:'JetBrains Mono',monospace;font-size:.6rem;padding:4px 6px;transition:color .2s;touch-action:manipulation;}
+.bn-icon{width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:15px;transition:background .2s;}
+.bn-btn.active[data-tab="linux"]{color:var(--linux);}
+.bn-btn.active[data-tab="docker"]{color:var(--docker);}
+.bn-btn.active[data-tab="git"]{color:var(--git);}
+.bn-btn.active[data-tab="linux"] .bn-icon{background:var(--linux-dim);}
+.bn-btn.active[data-tab="docker"] .bn-icon{background:var(--docker-dim);}
+.bn-btn.active[data-tab="git"] .bn-icon{background:var(--git-dim);}
 </style>
 </head>
 <body>
-<div class="wrapper">
 
-  <header>
-    <div class="header-badge">// Command Reference v4.2 — With Examples</div>
-    <h1>
-      <span class="title-git">Git</span>
-      <span class="title-amp">&</span>
-      <span class="title-docker">Docker</span>
-    </h1>
-    <p class="subtitle">Two-tone syntax · Real-world examples · Click any command to copy</p>
-
-    <div class="legend">
-      <div class="legend-item"><div class="legend-dot" style="background:#ffa991"></div> Git fixed keyword</div>
-      <div class="legend-item"><div class="legend-dot" style="background:#ffe066"></div> Your value (Git)</div>
-      <div class="legend-item"><div class="legend-dot" style="background:#7dc8ff"></div> Docker fixed keyword</div>
-      <div class="legend-item"><div class="legend-dot" style="background:#a8ffb0"></div> Your value (Docker)</div>
-      <div class="legend-item"><div class="legend-dot" style="background:#b39dff"></div> Example value</div>
+<header>
+  <div class="header-row1">
+    <div class="logo">
+      <div class="logo-icon">⌨️</div>
+      <h1>Dev Commands</h1>
     </div>
-
-    <div class="stats-bar">
-      <div class="stat stat-git"><span class="stat-num">50+</span><span class="stat-label">Git Commands</span></div>
-      <div class="stat stat-total"><span class="stat-num">100+</span><span class="stat-label">Total</span></div>
-      <div class="stat stat-docker"><span class="stat-num">55+</span><span class="stat-label">Docker Commands</span></div>
-    </div>
-  </header>
-
-  <div class="search-wrap" style="margin-top:40px">
-    <span class="search-icon">⌕</span>
-    <input type="text" id="searchInput" placeholder="Search commands..." oninput="filterCommands(this.value)">
+    <input class="search-box" type="text" id="searchInput" placeholder="Search commands…" autocomplete="off" autocorrect="off" spellcheck="false">
   </div>
+  <nav class="tab-nav">
+    <button class="tab-btn active" data-tab="linux"><span class="dot"></span>🐧 Linux<span class="tab-count" id="linux-count">0</span></button>
+    <button class="tab-btn" data-tab="docker"><span class="dot"></span>🐳 Docker<span class="tab-count" id="docker-count">0</span></button>
+    <button class="tab-btn" data-tab="git"><span class="dot"></span>🌿 Git<span class="tab-count" id="git-count">0</span></button>
+  </nav>
+</header>
 
-  <div class="tab-nav">
-    <button class="tab-btn active-git" onclick="showTab('git', this)">
-      <span class="tab-icon">⎇</span> Git Commands
-    </button>
-    <button class="tab-btn" onclick="showTab('docker', this)">
-      <span class="tab-icon">🐳</span> Docker Commands
-    </button>
-  </div>
+<main>
 
-  <div id="git-section" class="section git-section active">
-    <div class="category-grid" id="git-grid"></div>
-  </div>
+<!-- ══════════ LINUX ══════════ -->
+<div id="linux-tab" class="tab-content linux active">
+  <div class="section-hero"><span class="section-emoji">🐧</span><div><h2>Linux Commands</h2><p>Files · Processes · Networking · Permissions · Archives</p></div></div>
 
-  <div id="docker-section" class="section docker-section">
-    <div class="category-grid" id="docker-grid"></div>
-  </div>
+  <div class="category"><div class="category-label">File &amp; Directory</div><div class="cmd-grid">
+    <div class="cmd-card"><div class="cmd-header"><span class="cmd-code">ls -la</span><button class="copy-btn" onclick="cp(this,'ls -la')">copy</button></div><p class="cmd-desc">List all files including hidden ones with permissions, size and date.</p><div class="cmd-example">$ ls -la /home/user</div></div>
+    <div class="cmd-card"><div class="cmd-header"><span class="cmd-code">cd &lt;dir&gt;</span><button class="copy-btn" onclick="cp(this,'cd')">copy</button></div><p class="cmd-desc">Change directory. <code>cd ..</code> goes up, <code>cd ~</code> goes home, <code>cd -</code> goes back.</p><div class="cmd-example">$ cd /var/log</div></div>
+    <div class="cmd-card"><div class="cmd-header"><span class="cmd-code">mkdir -p &lt;dir&gt;</span><button class="copy-btn" onclick="cp(this,'mkdir -p')">copy</button></div><p class="cmd-desc">Create a directory and all missing parent directories at once.</p><div class="cmd-example">$ mkdir -p projects/app/src</div></div>
+    <div class="cmd-card"><div class="cmd-header"><span class="cmd-code">rm -rf &lt;path&gt;</span><button class="copy-btn" onclick="cp(this,'rm -rf')">copy</button></div><p class="cmd-desc">⚠️ Force-delete files and folders recursively. This is irreversible!</p><div class="cmd-example">$ rm -rf ./node_modules</div></div>
+    <div class="cmd-card"><div class="cmd-header"><span class="cmd-code">cp -r &lt;src&gt; &lt;dst&gt;</span><button class="copy-btn" onclick="cp(this,'cp -r')">copy</button></div><p class="cmd-desc">Copy files or entire directories recursively.</p><div class="cmd-example">$ cp -r ./src ./backup</div></div>
+    <div class="cmd-card"><div class="cmd-header"><span class="cmd-code">mv &lt;src&gt; &lt;dst&gt;</span><button class="copy-btn" onclick="cp(this,'mv')">copy</button></div><p class="cmd-desc">Move or rename files and directories.</p><div class="cmd-example">$ mv old_name.txt new_name.txt</div></div>
+    <div class="cmd-card"><div class="cmd-header"><span class="cmd-code">find . -name "*.log"</span><button class="copy-btn" onclick="cp(this,'find . -name')">copy</button></div><p class="cmd-desc">Search for files recursively by name pattern, type, or size.</p><div class="cmd-example">$ find /var -name "error.log"</div></div>
+    <div class="cmd-card"><div class="cmd-header"><span class="cmd-code">pwd</span><button class="copy-btn" onclick="cp(this,'pwd')">copy</button></div><p class="cmd-desc">Print the full path of the current working directory.</p><div class="cmd-example">$ pwd → /home/user/projects</div></div>
+    <div class="cmd-card"><div class="cmd-header"><span class="cmd-code">touch &lt;file&gt;</span><button class="copy-btn" onclick="cp(this,'touch')">copy</button></div><p class="cmd-desc">Create an empty file or update its last-modified timestamp.</p><div class="cmd-example">$ touch index.html</div></div>
+    <div class="cmd-card"><div class="cmd-header"><span class="cmd-code">ln -s &lt;target&gt; &lt;link&gt;</span><button class="copy-btn" onclick="cp(this,'ln -s')">copy</button></div><p class="cmd-desc">Create a symbolic (soft) link to a file or directory.</p><div class="cmd-example">$ ln -s /usr/bin/python3 python</div></div>
+  </div></div>
 
+  <div class="category"><div class="category-label">View &amp; Edit Files</div><div class="cmd-grid">
+    <div class="cmd-card"><div class="cmd-header"><span class="cmd-code">cat &lt;file&gt;</span><button class="copy-btn" onclick="cp(this,'cat')">copy</button></div><p class="cmd-desc">Print the full contents of a file to the terminal.</p><div class="cmd-example">$ cat /etc/hosts</div></div>
+    <div class="cmd-card"><div class="cmd-header"><span class="cmd-code">less &lt;file&gt;</span><button class="copy-btn" onclick="cp(this,'less')">copy</button></div><p class="cmd-desc">Page through large files. Press <code>q</code> to quit, <code>/</code> to search inside.</p><div class="cmd-example">$ less /var/log/syslog</div></div>
+    <div class="cmd-card"><div class="cmd-header"><span class="cmd-code">tail -f &lt;file&gt;</span><button class="copy-btn" onclick="cp(this,'tail -f')">copy</button></div><p class="cmd-desc">Follow a file live — perfect for watching logs in real time.</p><div class="cmd-example">$ tail -f /var/log/nginx/access.log</div></div>
+    <div class="cmd-card"><div class="cmd-header"><span class="cmd-code">grep -rn "text" .</span><button class="copy-btn" onclick="cp(this,'grep -rn')">copy</button></div><p class="cmd-desc">Recursively search text inside files with line numbers.</p><div class="cmd-example">$ grep -rn "TODO" ./src</div></div>
+    <div class="cmd-card"><div class="cmd-header"><span class="cmd-code">nano / vim &lt;file&gt;</span><button class="copy-btn" onclick="cp(this,'nano')">copy</button></div><p class="cmd-desc">Edit files in terminal. <code>nano</code> is beginner-friendly; <code>vim</code> is powerful.</p><div class="cmd-example">$ nano /etc/nginx/nginx.conf</div></div>
+    <div class="cmd-card"><div class="cmd-header"><span class="cmd-code">wc -l &lt;file&gt;</span><button class="copy-btn" onclick="cp(this,'wc -l')">copy</button></div><p class="cmd-desc">Count lines (<code>-l</code>), words (<code>-w</code>), or characters (<code>-c</code>) in a file.</p><div class="cmd-example">$ wc -l app.log</div></div>
+    <div class="cmd-card"><div class="cmd-header"><span class="cmd-code">sed -i 's/old/new/g'</span><button class="copy-btn" onclick="cp(this,\"sed -i 's/old/new/g' file.txt\")">copy</button></div><p class="cmd-desc">Find and replace text in files. <code>-i</code> edits the file in-place.</p><div class="cmd-example">$ sed -i 's/localhost/0.0.0.0/g' config.txt</div></div>
+  </div></div>
+
+  <div class="category"><div class="category-label">Processes &amp; System</div><div class="cmd-grid">
+    <div class="cmd-card"><div class="cmd-header"><span class="cmd-code">ps aux</span><button class="copy-btn" onclick="cp(this,'ps aux')">copy</button></div><p class="cmd-desc">List all running processes with CPU and memory usage.</p><div class="cmd-example">$ ps aux | grep nginx</div></div>
+    <div class="cmd-card"><div class="cmd-header"><span class="cmd-code">kill -9 &lt;PID&gt;</span><button class="copy-btn" onclick="cp(this,'kill -9')">copy</button></div><p class="cmd-desc">Force-terminate a process by PID. Try <code>kill PID</code> first for graceful stop.</p><div class="cmd-example">$ kill -9 12345</div></div>
+    <div class="cmd-card"><div class="cmd-header"><span class="cmd-code">htop</span><button class="copy-btn" onclick="cp(this,'htop')">copy</button></div><p class="cmd-desc">Interactive real-time process and resource monitor.</p><div class="cmd-example">$ htop</div></div>
+    <div class="cmd-card"><div class="cmd-header"><span class="cmd-code">df -h</span><button class="copy-btn" onclick="cp(this,'df -h')">copy</button></div><p class="cmd-desc">Show disk space usage for all filesystems in human-readable format.</p><div class="cmd-example">$ df -h /</div></div>
+    <div class="cmd-card"><div class="cmd-header"><span class="cmd-code">du -sh &lt;dir&gt;</span><button class="copy-btn" onclick="cp(this,'du -sh')">copy</button></div><p class="cmd-desc">Show total size of a directory or file.</p><div class="cmd-example">$ du -sh ./node_modules</div></div>
+    <div class="cmd-card"><div class="cmd-header"><span class="cmd-code">free -h</span><button class="copy-btn" onclick="cp(this,'free -h')">copy</button></div><p class="cmd-desc">Display RAM and swap memory usage in human-readable units.</p><div class="cmd-example">$ free -h</div></div>
+    <div class="cmd-card"><div class="cmd-header"><span class="cmd-code">uname -a</span><button class="copy-btn" onclick="cp(this,'uname -a')">copy</button></div><p class="cmd-desc">Show kernel version, hostname, and architecture info.</p><div class="cmd-example">$ uname -a</div></div>
+    <div class="cmd-card"><div class="cmd-header"><span class="cmd-code">systemctl restart &lt;svc&gt;</span><button class="copy-btn" onclick="cp(this,'systemctl restart')">copy</button></div><p class="cmd-desc">Manage services: <code>start</code>, <code>stop</code>, <code>restart</code>, <code>status</code>, <code>enable</code>.</p><div class="cmd-example">$ systemctl restart nginx</div></div>
+  </div></div>
+
+  <div class="category"><div class="category-label">Permissions &amp; Users</div><div class="cmd-grid">
+    <div class="cmd-card"><div class="cmd-header"><span class="cmd-code">chmod 755 &lt;file&gt;</span><button class="copy-btn" onclick="cp(this,'chmod 755')">copy</button></div><p class="cmd-desc">Set permissions. <code>755</code>=owner rwx, others rx. Use <code>+x</code> to add execute.</p><div class="cmd-example">$ chmod +x deploy.sh</div></div>
+    <div class="cmd-card"><div class="cmd-header"><span class="cmd-code">chown user:group &lt;f&gt;</span><button class="copy-btn" onclick="cp(this,'chown')">copy</button></div><p class="cmd-desc">Change file owner and group. Add <code>-R</code> for recursive.</p><div class="cmd-example">$ chown -R www-data:www-data /var/www</div></div>
+    <div class="cmd-card"><div class="cmd-header"><span class="cmd-code">sudo &lt;command&gt;</span><button class="copy-btn" onclick="cp(this,'sudo')">copy</button></div><p class="cmd-desc">Run a command with superuser (root) privileges.</p><div class="cmd-example">$ sudo apt update && sudo apt upgrade</div></div>
+    <div class="cmd-card"><div class="cmd-header"><span class="cmd-code">whoami / id</span><button class="copy-btn" onclick="cp(this,'id')">copy</button></div><p class="cmd-desc">Show current username or full user/group identity.</p><div class="cmd-example">$ id → uid=1000(user) gid=1000</div></div>
+  </div></div>
+
+  <div class="category"><div class="category-label">Networking</div><div class="cmd-grid">
+    <div class="cmd-card"><div class="cmd-header"><span class="cmd-code">curl -X GET &lt;url&gt;</span><button class="copy-btn" onclick="cp(this,'curl')">copy</button></div><p class="cmd-desc">Make HTTP requests. <code>-I</code> headers only, <code>-d</code> POST body, <code>-o</code> save to file.</p><div class="cmd-example">$ curl -s https://api.ipify.org</div></div>
+    <div class="cmd-card"><div class="cmd-header"><span class="cmd-code">wget &lt;url&gt;</span><button class="copy-btn" onclick="cp(this,'wget')">copy</button></div><p class="cmd-desc">Download a file from the internet.</p><div class="cmd-example">$ wget https://example.com/file.zip</div></div>
+    <div class="cmd-card"><div class="cmd-header"><span class="cmd-code">ping &lt;host&gt;</span><button class="copy-btn" onclick="cp(this,'ping')">copy</button></div><p class="cmd-desc">Test network reachability and measure latency to a host.</p><div class="cmd-example">$ ping google.com</div></div>
+    <div class="cmd-card"><div class="cmd-header"><span class="cmd-code">ss -tulnp</span><button class="copy-btn" onclick="cp(this,'ss -tulnp')">copy</button></div><p class="cmd-desc">Show open ports and the processes listening on them.</p><div class="cmd-example">$ ss -tulnp | grep 80</div></div>
+    <div class="cmd-card"><div class="cmd-header"><span class="cmd-code">ssh user@host</span><button class="copy-btn" onclick="cp(this,'ssh user@host')">copy</button></div><p class="cmd-desc">Connect to a remote server securely via SSH.</p><div class="cmd-example">$ ssh -i key.pem ubuntu@1.2.3.4</div></div>
+    <div class="cmd-card"><div class="cmd-header"><span class="cmd-code">scp &lt;src&gt; user@h:&lt;dst&gt;</span><button class="copy-btn" onclick="cp(this,'scp')">copy</button></div><p class="cmd-desc">Securely copy files to/from a remote server over SSH.</p><div class="cmd-example">$ scp app.tar.gz user@server:/tmp/</div></div>
+  </div></div>
+
+  <div class="category"><div class="category-label">Archives &amp; Compression</div><div class="cmd-grid">
+    <div class="cmd-card"><div class="cmd-header"><span class="cmd-code">tar -czf out.tar.gz &lt;dir&gt;</span><button class="copy-btn" onclick="cp(this,'tar -czf')">copy</button></div><p class="cmd-desc">Create a compressed gzip archive of a directory.</p><div class="cmd-example">$ tar -czf backup.tar.gz ./data</div></div>
+    <div class="cmd-card"><div class="cmd-header"><span class="cmd-code">tar -xzf file.tar.gz</span><button class="copy-btn" onclick="cp(this,'tar -xzf')">copy</button></div><p class="cmd-desc">Extract a .tar.gz archive. Add <code>-C ./dir</code> to extract into a folder.</p><div class="cmd-example">$ tar -xzf release.tar.gz -C ./dist</div></div>
+    <div class="cmd-card"><div class="cmd-header"><span class="cmd-code">unzip &lt;file.zip&gt;</span><button class="copy-btn" onclick="cp(this,'unzip')">copy</button></div><p class="cmd-desc">Extract a .zip archive. Add <code>-d ./output</code> to choose destination.</p><div class="cmd-example">$ unzip archive.zip -d ./output</div></div>
+  </div></div>
+
+  <div class="no-results" id="linux-no-results"><div class="no-results-icon">🔍</div>No commands match your search.</div>
 </div>
 
-<div class="toast" id="toast">📋 Copied!</div>
+<!-- ══════════ DOCKER ══════════ -->
+<div id="docker-tab" class="tab-content docker">
+  <div class="section-hero"><span class="section-emoji">🐳</span><div><h2>Docker Commands</h2><p>Images · Containers · Volumes · Networks · Compose</p></div></div>
+
+  <div class="category"><div class="category-label">Images</div><div class="cmd-grid">
+    <div class="cmd-card"><div class="cmd-header"><span class="cmd-code">docker pull &lt;image&gt;</span><button class="copy-btn" onclick="cp(this,'docker pull')">copy</button></div><p class="cmd-desc">Download an image from Docker Hub or a private registry.</p><div class="cmd-example">$ docker pull nginx:latest</div></div>
+    <div class="cmd-card"><div class="cmd-header"><span class="cmd-code">docker images</span><button class="copy-btn" onclick="cp(this,'docker images')">copy</button></div><p class="cmd-desc">List all locally available images. Add <code>-a</code> to include intermediate layers.</p><div class="cmd-example">$ docker images -a</div></div>
+    <div class="cmd-card"><div class="cmd-header"><span class="cmd-code">docker build -t &lt;tag&gt; .</span><button class="copy-btn" onclick="cp(this,'docker build -t')">copy</button></div><p class="cmd-desc">Build an image from the Dockerfile in the current directory.</p><div class="cmd-example">$ docker build -t myapp:1.0 .</div></div>
+    <div class="cmd-card"><div class="cmd-header"><span class="cmd-code">docker rmi &lt;image&gt;</span><button class="copy-btn" onclick="cp(this,'docker rmi')">copy</button></div><p class="cmd-desc">Remove one or more local images. Use <code>-f</code> to force removal.</p><div class="cmd-example">$ docker rmi myapp:old</div></div>
+    <div class="cmd-card"><div class="cmd-header"><span class="cmd-code">docker tag &lt;src&gt; &lt;dst&gt;</span><button class="copy-btn" onclick="cp(this,'docker tag')">copy</button></div><p class="cmd-desc">Tag an image with a new name — required before pushing to a registry.</p><div class="cmd-example">$ docker tag app user/app:v2</div></div>
+    <div class="cmd-card"><div class="cmd-header"><span class="cmd-code">docker push &lt;image&gt;</span><button class="copy-btn" onclick="cp(this,'docker push')">copy</button></div><p class="cmd-desc">Push a tagged image to Docker Hub or a registry.</p><div class="cmd-example">$ docker push user/myapp:v2</div></div>
+  </div></div>
+
+  <div class="category"><div class="category-label">Containers</div><div class="cmd-grid">
+    <div class="cmd-card"><div class="cmd-header"><span class="cmd-code">docker run -d -p 80:80</span><button class="copy-btn" onclick="cp(this,'docker run -d -p 80:80')">copy</button></div><p class="cmd-desc">Run a container in background, mapping host port to container port.</p><div class="cmd-example">$ docker run -d -p 3000:3000 --name api myapp</div></div>
+    <div class="cmd-card"><div class="cmd-header"><span class="cmd-code">docker ps</span><button class="copy-btn" onclick="cp(this,'docker ps')">copy</button></div><p class="cmd-desc">List running containers. Add <code>-a</code> to include stopped ones.</p><div class="cmd-example">$ docker ps -a</div></div>
+    <div class="cmd-card"><div class="cmd-header"><span class="cmd-code">docker stop / start &lt;id&gt;</span><button class="copy-btn" onclick="cp(this,'docker stop')">copy</button></div><p class="cmd-desc">Gracefully stop or start a container by name or ID.</p><div class="cmd-example">$ docker stop api && docker start api</div></div>
+    <div class="cmd-card"><div class="cmd-header"><span class="cmd-code">docker rm &lt;container&gt;</span><button class="copy-btn" onclick="cp(this,'docker rm')">copy</button></div><p class="cmd-desc">Remove a stopped container. Use <code>-f</code> to force-remove a running one.</p><div class="cmd-example">$ docker rm -f old_container</div></div>
+    <div class="cmd-card"><div class="cmd-header"><span class="cmd-code">docker exec -it &lt;c&gt; bash</span><button class="copy-btn" onclick="cp(this,'docker exec -it')">copy</button></div><p class="cmd-desc">Open an interactive shell inside a running container.</p><div class="cmd-example">$ docker exec -it mydb bash</div></div>
+    <div class="cmd-card"><div class="cmd-header"><span class="cmd-code">docker logs -f &lt;c&gt;</span><button class="copy-btn" onclick="cp(this,'docker logs -f')">copy</button></div><p class="cmd-desc">Stream live container logs. Add <code>--tail 100</code> to limit output.</p><div class="cmd-example">$ docker logs --tail 100 -f api</div></div>
+    <div class="cmd-card"><div class="cmd-header"><span class="cmd-code">docker inspect &lt;c&gt;</span><button class="copy-btn" onclick="cp(this,'docker inspect')">copy</button></div><p class="cmd-desc">Return detailed JSON metadata about a container or image.</p><div class="cmd-example">$ docker inspect api | jq '.[0].NetworkSettings'</div></div>
+    <div class="cmd-card"><div class="cmd-header"><span class="cmd-code">docker stats</span><button class="copy-btn" onclick="cp(this,'docker stats')">copy</button></div><p class="cmd-desc">Live CPU, RAM and network usage for all running containers.</p><div class="cmd-example">$ docker stats --no-stream</div></div>
+    <div class="cmd-card"><div class="cmd-header"><span class="cmd-code">docker cp &lt;src&gt; &lt;c&gt;:&lt;dst&gt;</span><button class="copy-btn" onclick="cp(this,'docker cp')">copy</button></div><p class="cmd-desc">Copy files between host and a container (both directions work).</p><div class="cmd-example">$ docker cp config.json api:/app/</div></div>
+  </div></div>
+
+  <div class="category"><div class="category-label">Volumes &amp; Networks</div><div class="cmd-grid">
+    <div class="cmd-card"><div class="cmd-header"><span class="cmd-code">docker volume create &lt;v&gt;</span><button class="copy-btn" onclick="cp(this,'docker volume create')">copy</button></div><p class="cmd-desc">Create a named volume for persistent data storage.</p><div class="cmd-example">$ docker volume create db_data</div></div>
+    <div class="cmd-card"><div class="cmd-header"><span class="cmd-code">docker volume ls / prune</span><button class="copy-btn" onclick="cp(this,'docker volume ls')">copy</button></div><p class="cmd-desc">List volumes or remove all unused ones.</p><div class="cmd-example">$ docker volume prune</div></div>
+    <div class="cmd-card"><div class="cmd-header"><span class="cmd-code">docker network create &lt;n&gt;</span><button class="copy-btn" onclick="cp(this,'docker network create')">copy</button></div><p class="cmd-desc">Create a bridge network for inter-container communication.</p><div class="cmd-example">$ docker network create app-net</div></div>
+    <div class="cmd-card"><div class="cmd-header"><span class="cmd-code">docker network ls</span><button class="copy-btn" onclick="cp(this,'docker network ls')">copy</button></div><p class="cmd-desc">List all Docker networks. Use <code>inspect</code> to see connected containers.</p><div class="cmd-example">$ docker network inspect app-net</div></div>
+  </div></div>
+
+  <div class="category"><div class="category-label">Docker Compose</div><div class="cmd-grid">
+    <div class="cmd-card"><div class="cmd-header"><span class="cmd-code">docker compose up -d</span><button class="copy-btn" onclick="cp(this,'docker compose up -d')">copy</button></div><p class="cmd-desc">Start all services in <code>docker-compose.yml</code> in the background.</p><div class="cmd-example">$ docker compose up -d --build</div></div>
+    <div class="cmd-card"><div class="cmd-header"><span class="cmd-code">docker compose down</span><button class="copy-btn" onclick="cp(this,'docker compose down')">copy</button></div><p class="cmd-desc">Stop &amp; remove containers and networks. Add <code>-v</code> to also remove volumes.</p><div class="cmd-example">$ docker compose down -v</div></div>
+    <div class="cmd-card"><div class="cmd-header"><span class="cmd-code">docker compose logs -f</span><button class="copy-btn" onclick="cp(this,'docker compose logs -f')">copy</button></div><p class="cmd-desc">Follow live logs from all or a specific Compose service.</p><div class="cmd-example">$ docker compose logs -f web</div></div>
+    <div class="cmd-card"><div class="cmd-header"><span class="cmd-code">docker compose ps</span><button class="copy-btn" onclick="cp(this,'docker compose ps')">copy</button></div><p class="cmd-desc">List status of containers in the Compose project.</p><div class="cmd-example">$ docker compose ps</div></div>
+    <div class="cmd-card"><div class="cmd-header"><span class="cmd-code">docker compose exec &lt;svc&gt;</span><button class="copy-btn" onclick="cp(this,'docker compose exec')">copy</button></div><p class="cmd-desc">Run a command or open a shell inside a running Compose service.</p><div class="cmd-example">$ docker compose exec db psql -U admin</div></div>
+    <div class="cmd-card"><div class="cmd-header"><span class="cmd-code">docker compose build</span><button class="copy-btn" onclick="cp(this,'docker compose build --no-cache')">copy</button></div><p class="cmd-desc">Rebuild images for services that have a <code>build</code> key defined.</p><div class="cmd-example">$ docker compose build --no-cache</div></div>
+  </div></div>
+
+  <div class="category"><div class="category-label">Cleanup</div><div class="cmd-grid">
+    <div class="cmd-card"><div class="cmd-header"><span class="cmd-code">docker system prune -a</span><button class="copy-btn" onclick="cp(this,'docker system prune -a')">copy</button></div><p class="cmd-desc">⚠️ Remove ALL unused images, containers, networks and build cache.</p><div class="cmd-example">$ docker system prune -a --volumes</div></div>
+    <div class="cmd-card"><div class="cmd-header"><span class="cmd-code">docker image prune -f</span><button class="copy-btn" onclick="cp(this,'docker image prune -f')">copy</button></div><p class="cmd-desc">Remove dangling (untagged) images to free up disk space.</p><div class="cmd-example">$ docker image prune -f</div></div>
+  </div></div>
+
+  <div class="no-results" id="docker-no-results"><div class="no-results-icon">🔍</div>No commands match your search.</div>
+</div>
+
+<!-- ══════════ GIT ══════════ -->
+<div id="git-tab" class="tab-content git">
+  <div class="section-hero"><span class="section-emoji">🌿</span><div><h2>Git Commands</h2><p>Commits · Branches · Remotes · History · Tags</p></div></div>
+
+  <div class="category"><div class="category-label">Setup &amp; Init</div><div class="cmd-grid">
+    <div class="cmd-card"><div class="cmd-header"><span class="cmd-code">git init</span><button class="copy-btn" onclick="cp(this,'git init')">copy</button></div><p class="cmd-desc">Initialize a new Git repository in the current directory.</p><div class="cmd-example">$ git init my-project</div></div>
+    <div class="cmd-card"><div class="cmd-header"><span class="cmd-code">git clone &lt;url&gt;</span><button class="copy-btn" onclick="cp(this,'git clone')">copy</button></div><p class="cmd-desc">Clone a remote repository to your local machine.</p><div class="cmd-example">$ git clone git@github.com:user/repo.git</div></div>
+    <div class="cmd-card"><div class="cmd-header"><span class="cmd-code">git config --global</span><button class="copy-btn" onclick="cp(this,'git config --global')">copy</button></div><p class="cmd-desc">Set global name, email, or default editor used across all repos.</p><div class="cmd-example">$ git config --global user.email "you@mail.com"</div></div>
+  </div></div>
+
+  <div class="category"><div class="category-label">Staging &amp; Committing</div><div class="cmd-grid">
+    <div class="cmd-card"><div class="cmd-header"><span class="cmd-code">git status</span><button class="copy-btn" onclick="cp(this,'git status')">copy</button></div><p class="cmd-desc">Show staged, unstaged and untracked files in the working tree.</p><div class="cmd-example">$ git status -s</div></div>
+    <div class="cmd-card"><div class="cmd-header"><span class="cmd-code">git add &lt;file&gt;</span><button class="copy-btn" onclick="cp(this,'git add .')">copy</button></div><p class="cmd-desc">Stage files for commit. Use <code>.</code> to stage everything at once.</p><div class="cmd-example">$ git add src/ package.json</div></div>
+    <div class="cmd-card"><div class="cmd-header"><span class="cmd-code">git commit -m "msg"</span><button class="copy-btn" onclick="cp(this,'git commit -m')">copy</button></div><p class="cmd-desc">Commit staged changes with a message. Use prefixes: <code>feat:</code>, <code>fix:</code>, <code>docs:</code>.</p><div class="cmd-example">$ git commit -m "feat: add login page"</div></div>
+    <div class="cmd-card"><div class="cmd-header"><span class="cmd-code">git commit --amend</span><button class="copy-btn" onclick="cp(this,'git commit --amend')">copy</button></div><p class="cmd-desc">Modify the most recent commit (message or staged files).</p><div class="cmd-example">$ git commit --amend --no-edit</div></div>
+    <div class="cmd-card"><div class="cmd-header"><span class="cmd-code">git diff</span><button class="copy-btn" onclick="cp(this,'git diff')">copy</button></div><p class="cmd-desc">Show unstaged changes. Use <code>--staged</code> to see what's queued to commit.</p><div class="cmd-example">$ git diff HEAD~1</div></div>
+    <div class="cmd-card"><div class="cmd-header"><span class="cmd-code">git stash</span><button class="copy-btn" onclick="cp(this,'git stash')">copy</button></div><p class="cmd-desc">Shelve uncommitted changes. Restore with <code>git stash pop</code>.</p><div class="cmd-example">$ git stash push -m "WIP: feature"</div></div>
+  </div></div>
+
+  <div class="category"><div class="category-label">Branches</div><div class="cmd-grid">
+    <div class="cmd-card"><div class="cmd-header"><span class="cmd-code">git branch</span><button class="copy-btn" onclick="cp(this,'git branch')">copy</button></div><p class="cmd-desc">List branches. <code>-a</code> includes remote, <code>-d</code> deletes, <code>-m</code> renames.</p><div class="cmd-example">$ git branch -d feature/login</div></div>
+    <div class="cmd-card"><div class="cmd-header"><span class="cmd-code">git checkout -b &lt;br&gt;</span><button class="copy-btn" onclick="cp(this,'git checkout -b')">copy</button></div><p class="cmd-desc">Create and switch to a new branch in one command.</p><div class="cmd-example">$ git checkout -b feature/signup</div></div>
+    <div class="cmd-card"><div class="cmd-header"><span class="cmd-code">git switch &lt;branch&gt;</span><button class="copy-btn" onclick="cp(this,'git switch')">copy</button></div><p class="cmd-desc">Modern way to switch branches (Git 2.23+). Use <code>-c</code> to create new.</p><div class="cmd-example">$ git switch main</div></div>
+    <div class="cmd-card"><div class="cmd-header"><span class="cmd-code">git merge &lt;branch&gt;</span><button class="copy-btn" onclick="cp(this,'git merge')">copy</button></div><p class="cmd-desc">Merge another branch into the current one. <code>--no-ff</code> preserves history.</p><div class="cmd-example">$ git merge --no-ff feature/login</div></div>
+    <div class="cmd-card"><div class="cmd-header"><span class="cmd-code">git rebase &lt;branch&gt;</span><button class="copy-btn" onclick="cp(this,'git rebase')">copy</button></div><p class="cmd-desc">Replay commits on top of another branch for clean linear history.</p><div class="cmd-example">$ git rebase -i HEAD~3</div></div>
+    <div class="cmd-card"><div class="cmd-header"><span class="cmd-code">git cherry-pick &lt;hash&gt;</span><button class="copy-btn" onclick="cp(this,'git cherry-pick')">copy</button></div><p class="cmd-desc">Apply a specific commit from another branch onto the current one.</p><div class="cmd-example">$ git cherry-pick a3f2c91</div></div>
+  </div></div>
+
+  <div class="category"><div class="category-label">Remotes</div><div class="cmd-grid">
+    <div class="cmd-card"><div class="cmd-header"><span class="cmd-code">git remote -v</span><button class="copy-btn" onclick="cp(this,'git remote -v')">copy</button></div><p class="cmd-desc">List all remote connections with their URLs.</p><div class="cmd-example">$ git remote add origin git@github.com:u/r.git</div></div>
+    <div class="cmd-card"><div class="cmd-header"><span class="cmd-code">git fetch --all --prune</span><button class="copy-btn" onclick="cp(this,'git fetch --all --prune')">copy</button></div><p class="cmd-desc">Download remote changes without merging. <code>--prune</code> cleans deleted branches.</p><div class="cmd-example">$ git fetch --all --prune</div></div>
+    <div class="cmd-card"><div class="cmd-header"><span class="cmd-code">git pull --rebase</span><button class="copy-btn" onclick="cp(this,'git pull --rebase')">copy</button></div><p class="cmd-desc">Fetch and rebase (instead of merge) for a cleaner commit history.</p><div class="cmd-example">$ git pull --rebase origin main</div></div>
+    <div class="cmd-card"><div class="cmd-header"><span class="cmd-code">git push -u origin &lt;br&gt;</span><button class="copy-btn" onclick="cp(this,'git push -u origin')">copy</button></div><p class="cmd-desc">Push branch to remote and set it as the upstream tracking branch.</p><div class="cmd-example">$ git push -u origin feature/api</div></div>
+    <div class="cmd-card"><div class="cmd-header"><span class="cmd-code">git push --force-with-lease</span><button class="copy-btn" onclick="cp(this,'git push --force-with-lease')">copy</button></div><p class="cmd-desc">Safe force push: aborts if someone else pushed changes in the meantime.</p><div class="cmd-example">$ git push --force-with-lease origin main</div></div>
+  </div></div>
+
+  <div class="category"><div class="category-label">History &amp; Undoing</div><div class="cmd-grid">
+    <div class="cmd-card"><div class="cmd-header"><span class="cmd-code">git log --oneline --graph</span><button class="copy-btn" onclick="cp(this,'git log --oneline --graph --all')">copy</button></div><p class="cmd-desc">Compact visual commit history showing all branches as a graph.</p><div class="cmd-example">$ git log --oneline --graph --all</div></div>
+    <div class="cmd-card"><div class="cmd-header"><span class="cmd-code">git show &lt;hash&gt;</span><button class="copy-btn" onclick="cp(this,'git show')">copy</button></div><p class="cmd-desc">Show the diff and metadata of a specific commit.</p><div class="cmd-example">$ git show HEAD~2</div></div>
+    <div class="cmd-card"><div class="cmd-header"><span class="cmd-code">git reset --soft HEAD~1</span><button class="copy-btn" onclick="cp(this,'git reset --soft HEAD~1')">copy</button></div><p class="cmd-desc">Undo last commit but keep changes staged — safe to recommit.</p><div class="cmd-example">$ git reset --soft HEAD~1</div></div>
+    <div class="cmd-card"><div class="cmd-header"><span class="cmd-code">git reset --hard &lt;hash&gt;</span><button class="copy-btn" onclick="cp(this,'git reset --hard')">copy</button></div><p class="cmd-desc">⚠️ Discard all changes and reset to a commit. This is destructive!</p><div class="cmd-example">$ git reset --hard origin/main</div></div>
+    <div class="cmd-card"><div class="cmd-header"><span class="cmd-code">git revert &lt;hash&gt;</span><button class="copy-btn" onclick="cp(this,'git revert')">copy</button></div><p class="cmd-desc">Create a new commit that reverses another. Safe for shared branches.</p><div class="cmd-example">$ git revert a3f2c91</div></div>
+    <div class="cmd-card"><div class="cmd-header"><span class="cmd-code">git reflog</span><button class="copy-btn" onclick="cp(this,'git reflog')">copy</button></div><p class="cmd-desc">Show full history of HEAD movements — use to recover "lost" commits.</p><div class="cmd-example">$ git reflog | head -20</div></div>
+  </div></div>
+
+  <div class="category"><div class="category-label">Tags &amp; Advanced</div><div class="cmd-grid">
+    <div class="cmd-card"><div class="cmd-header"><span class="cmd-code">git tag -a v1.0 -m "msg"</span><button class="copy-btn" onclick="cp(this,'git tag -a v1.0 -m')">copy</button></div><p class="cmd-desc">Create an annotated release tag at the current commit.</p><div class="cmd-example">$ git tag -a v2.0.0 -m "Release 2.0"</div></div>
+    <div class="cmd-card"><div class="cmd-header"><span class="cmd-code">git push --tags</span><button class="copy-btn" onclick="cp(this,'git push --tags')">copy</button></div><p class="cmd-desc">Push all local tags to the remote repository.</p><div class="cmd-example">$ git push origin --tags</div></div>
+    <div class="cmd-card"><div class="cmd-header"><span class="cmd-code">git blame &lt;file&gt;</span><button class="copy-btn" onclick="cp(this,'git blame')">copy</button></div><p class="cmd-desc">Show who last changed each line in a file and when.</p><div class="cmd-example">$ git blame -L 10,30 src/app.js</div></div>
+    <div class="cmd-card"><div class="cmd-header"><span class="cmd-code">git bisect</span><button class="copy-btn" onclick="cp(this,'git bisect start')">copy</button></div><p class="cmd-desc">Binary-search commits to find which one introduced a bug.</p><div class="cmd-example">$ git bisect start; git bisect bad; git bisect good v1.0</div></div>
+  </div></div>
+
+  <div class="no-results" id="git-no-results"><div class="no-results-icon">🔍</div>No commands match your search.</div>
+</div>
+
+</main>
+
+<!-- Mobile Bottom Nav -->
+<nav class="bottom-nav">
+  <button class="bn-btn active" data-tab="linux"><div class="bn-icon">🐧</div>Linux</button>
+  <button class="bn-btn" data-tab="docker"><div class="bn-icon">🐳</div>Docker</button>
+  <button class="bn-btn" data-tab="git"><div class="bn-icon">🌿</div>Git</button>
+</nav>
 
 <script>
-// parts: [{t:'fixed'|'var', v:'string'}]
-// example: same structure but with real values
-const gitData = [
-  { icon:"🚀", title:"Setup & Config", commands:[
-    { parts:[{t:'fixed',v:'git config --global user.name '},{t:'var',v:'"YourName"'}], example:[{t:'fixed',v:'git config --global user.name '},{t:'var',v:'"John Doe"'}], desc:"Set your global Git username" },
-    { parts:[{t:'fixed',v:'git config --global user.email '},{t:'var',v:'"email@example.com"'}], example:[{t:'fixed',v:'git config --global user.email '},{t:'var',v:'"john@company.com"'}], desc:"Set your global Git email" },
-    { parts:[{t:'fixed',v:'git config --global core.editor '},{t:'var',v:'"editor"'}], example:[{t:'fixed',v:'git config --global core.editor '},{t:'var',v:'"code"'}], desc:"Set default code editor" },
-    { parts:[{t:'fixed',v:'git config --list'}], example:[{t:'fixed',v:'git config --list'}], desc:"List all config settings" },
-    { parts:[{t:'fixed',v:'git config --global alias.'},{t:'var',v:'shortname'},{t:'fixed',v:' '},{t:'var',v:'command'}], example:[{t:'fixed',v:'git config --global alias.'},{t:'var',v:'st'},{t:'fixed',v:' '},{t:'var',v:'status'}], desc:"Create a command alias" },
-  ]},
-  { icon:"📁", title:"Initialize & Clone", commands:[
-    { parts:[{t:'fixed',v:'git init'}], example:[{t:'fixed',v:'git init'}], desc:"Initialize a new local repo" },
-    { parts:[{t:'fixed',v:'git init '},{t:'var',v:'<folder>'}], example:[{t:'fixed',v:'git init '},{t:'var',v:'my-project'}], desc:"Init repo in a specific folder" },
-    { parts:[{t:'fixed',v:'git clone '},{t:'var',v:'<url>'}], example:[{t:'fixed',v:'git clone '},{t:'var',v:'https://github.com/org/repo.git'}], desc:"Clone a remote repository" },
-    { parts:[{t:'fixed',v:'git clone '},{t:'var',v:'<url>'},{t:'fixed',v:' '},{t:'var',v:'<folder>'}], example:[{t:'fixed',v:'git clone '},{t:'var',v:'https://github.com/org/repo.git'},{t:'fixed',v:' '},{t:'var',v:'my-app'}], desc:"Clone into a named folder" },
-    { parts:[{t:'fixed',v:'git clone --depth 1 '},{t:'var',v:'<url>'}], example:[{t:'fixed',v:'git clone --depth 1 '},{t:'var',v:'https://github.com/org/repo.git'}], desc:"Shallow clone — latest commit only" },
-    { parts:[{t:'fixed',v:'git clone --branch '},{t:'var',v:'<branch>'},{t:'fixed',v:' '},{t:'var',v:'<url>'}], example:[{t:'fixed',v:'git clone --branch '},{t:'var',v:'develop'},{t:'fixed',v:' '},{t:'var',v:'https://github.com/org/repo.git'}], desc:"Clone a specific branch" },
-  ]},
-  { icon:"📸", title:"Staging & Commits", commands:[
-    { parts:[{t:'fixed',v:'git status'}], example:[{t:'fixed',v:'git status'}], desc:"Show working tree status" },
-    { parts:[{t:'fixed',v:'git add '},{t:'var',v:'<file>'}], example:[{t:'fixed',v:'git add '},{t:'var',v:'src/LoginPage.jsx'}], desc:"Stage a specific file" },
-    { parts:[{t:'fixed',v:'git add .'}], example:[{t:'fixed',v:'git add .'}], desc:"Stage all changes in current folder" },
-    { parts:[{t:'fixed',v:'git add -p'}], example:[{t:'fixed',v:'git add -p'}], desc:"Interactively stage chunks of changes" },
-    { parts:[{t:'fixed',v:'git commit -m '},{t:'var',v:'"message"'}], example:[{t:'fixed',v:'git commit -m '},{t:'var',v:'"feat: add login page UI"'}], desc:"Commit staged changes with a message" },
-    { parts:[{t:'fixed',v:'git commit -am '},{t:'var',v:'"message"'}], example:[{t:'fixed',v:'git commit -am '},{t:'var',v:'"fix: button alignment on login"'}], desc:"Stage tracked files & commit in one step" },
-    { parts:[{t:'fixed',v:'git commit --amend'}], example:[{t:'fixed',v:'git commit --amend'}], desc:"Modify the very last commit" },
-    { parts:[{t:'fixed',v:'git commit --amend --no-edit'}], example:[{t:'fixed',v:'git commit --amend --no-edit'}], desc:"Amend last commit without editing message" },
-  ]},
-  { icon:"🌿", title:"Branching", commands:[
-    { parts:[{t:'fixed',v:'git branch'}], example:[{t:'fixed',v:'git branch'}], desc:"List all local branches" },
-    { parts:[{t:'fixed',v:'git branch -a'}], example:[{t:'fixed',v:'git branch -a'}], desc:"List local and remote branches" },
-    { parts:[{t:'fixed',v:'git branch '},{t:'var',v:'<branch-name>'}], example:[{t:'fixed',v:'git branch '},{t:'var',v:'Task/login-page'}], desc:"Create a new branch (stays on current)" },
-    { parts:[{t:'fixed',v:'git checkout '},{t:'var',v:'<branch>'}], example:[{t:'fixed',v:'git checkout '},{t:'var',v:'Task/login-page'}], desc:"Switch to an existing branch" },
-    { parts:[{t:'fixed',v:'git checkout -b '},{t:'var',v:'<new-branch>'}], example:[{t:'fixed',v:'git checkout -b '},{t:'var',v:'Task/login-page'}], desc:"Create and immediately switch to new branch" },
-    { parts:[{t:'fixed',v:'git switch '},{t:'var',v:'<branch>'}], example:[{t:'fixed',v:'git switch '},{t:'var',v:'main'}], desc:"Switch to a branch (modern syntax)" },
-    { parts:[{t:'fixed',v:'git switch -c '},{t:'var',v:'<branch>'}], example:[{t:'fixed',v:'git switch -c '},{t:'var',v:'Task/signup-page'}], desc:"Create & switch to branch (modern)" },
-    { parts:[{t:'fixed',v:'git branch -d '},{t:'var',v:'<branch>'}], example:[{t:'fixed',v:'git branch -d '},{t:'var',v:'Task/login-page'}], desc:"Delete a fully merged branch" },
-    { parts:[{t:'fixed',v:'git branch -D '},{t:'var',v:'<branch>'}], example:[{t:'fixed',v:'git branch -D '},{t:'var',v:'Task/old-feature'}], desc:"Force-delete branch (even unmerged)", tag:"danger" },
-    { parts:[{t:'fixed',v:'git branch -m '},{t:'var',v:'<old>'},{t:'fixed',v:' '},{t:'var',v:'<new>'}], example:[{t:'fixed',v:'git branch -m '},{t:'var',v:'task/login'},{t:'fixed',v:' '},{t:'var',v:'Task/login-page'}], desc:"Rename a branch" },
-  ]},
-  { icon:"🔀", title:"Merging & Rebasing", commands:[
-    { parts:[{t:'fixed',v:'git checkout '},{t:'var',v:'main'}], example:[{t:'fixed',v:'git checkout '},{t:'var',v:'main'}], desc:"Step 1 — Switch to the target branch first" },
-    { parts:[{t:'fixed',v:'git merge '},{t:'var',v:'<branch-to-merge>'}], example:[{t:'fixed',v:'git merge '},{t:'var',v:'Task/login-page'}], desc:"Step 2 — Merge your feature branch into it" },
-    { parts:[{t:'fixed',v:'git merge --no-ff '},{t:'var',v:'<branch>'}], example:[{t:'fixed',v:'git merge --no-ff '},{t:'var',v:'Task/login-page'}], desc:"Merge and always create a merge commit" },
-    { parts:[{t:'fixed',v:'git merge --squash '},{t:'var',v:'<branch>'}], example:[{t:'fixed',v:'git merge --squash '},{t:'var',v:'Task/login-page'}], desc:"Squash all branch commits into one" },
-    { parts:[{t:'fixed',v:'git merge --abort'}], example:[{t:'fixed',v:'git merge --abort'}], desc:"Abort a merge that has conflicts" },
-    { parts:[{t:'fixed',v:'git rebase '},{t:'var',v:'<branch>'}], example:[{t:'fixed',v:'git rebase '},{t:'var',v:'main'}], desc:"Rebase current branch onto another" },
-    { parts:[{t:'fixed',v:'git rebase -i HEAD~'},{t:'var',v:'N'}], example:[{t:'fixed',v:'git rebase -i HEAD~'},{t:'var',v:'3'}], desc:"Interactive rebase — edit last N commits", tag:"pro" },
-    { parts:[{t:'fixed',v:'git rebase --abort'}], example:[{t:'fixed',v:'git rebase --abort'}], desc:"Abort an in-progress rebase" },
-    { parts:[{t:'fixed',v:'git rebase --continue'}], example:[{t:'fixed',v:'git rebase --continue'}], desc:"Continue rebase after resolving conflicts" },
-    { parts:[{t:'fixed',v:'git cherry-pick '},{t:'var',v:'<commit-hash>'}], example:[{t:'fixed',v:'git cherry-pick '},{t:'var',v:'a1b2c3d'}], desc:"Apply one specific commit to current branch" },
-  ]},
-  { icon:"🌐", title:"Remote Operations", commands:[
-    { parts:[{t:'fixed',v:'git remote -v'}], example:[{t:'fixed',v:'git remote -v'}], desc:"List all remote connections with URLs" },
-    { parts:[{t:'fixed',v:'git remote add '},{t:'var',v:'<name>'},{t:'fixed',v:' '},{t:'var',v:'<url>'}], example:[{t:'fixed',v:'git remote add '},{t:'var',v:'origin'},{t:'fixed',v:' '},{t:'var',v:'https://github.com/org/repo.git'}], desc:"Add a remote connection" },
-    { parts:[{t:'fixed',v:'git remote remove '},{t:'var',v:'<name>'}], example:[{t:'fixed',v:'git remote remove '},{t:'var',v:'origin'}], desc:"Remove a remote connection" },
-    { parts:[{t:'fixed',v:'git fetch'}], example:[{t:'fixed',v:'git fetch'}], desc:"Download remote changes without merging" },
-    { parts:[{t:'fixed',v:'git pull'}], example:[{t:'fixed',v:'git pull'}], desc:"Fetch and merge changes from remote" },
-    { parts:[{t:'fixed',v:'git pull --rebase'}], example:[{t:'fixed',v:'git pull --rebase'}], desc:"Pull using rebase instead of merge" },
-    { parts:[{t:'fixed',v:'git push origin '},{t:'var',v:'<branch>'}], example:[{t:'fixed',v:'git push origin '},{t:'var',v:'Task/login-page'}], desc:"Push a branch to remote" },
-    { parts:[{t:'fixed',v:'git push -u origin '},{t:'var',v:'<branch>'}], example:[{t:'fixed',v:'git push -u origin '},{t:'var',v:'Task/login-page'}], desc:"Push branch and set upstream tracking" },
-    { parts:[{t:'fixed',v:'git push --force-with-lease'}], example:[{t:'fixed',v:'git push --force-with-lease'}], desc:"Safe force push (protects others' work)", tag:"pro" },
-    { parts:[{t:'fixed',v:'git push origin --delete '},{t:'var',v:'<branch>'}], example:[{t:'fixed',v:'git push origin --delete '},{t:'var',v:'Task/login-page'}], desc:"Delete a remote branch", tag:"danger" },
-  ]},
-  { icon:"📜", title:"Log & History", commands:[
-    { parts:[{t:'fixed',v:'git log'}], example:[{t:'fixed',v:'git log'}], desc:"Show full detailed commit history" },
-    { parts:[{t:'fixed',v:'git log --oneline'}], example:[{t:'fixed',v:'git log --oneline'}], desc:"Compact — one line per commit" },
-    { parts:[{t:'fixed',v:'git log --graph --oneline --all'}], example:[{t:'fixed',v:'git log --graph --oneline --all'}], desc:"Visual ASCII branch graph" },
-    { parts:[{t:'fixed',v:'git log -n '},{t:'var',v:'<N>'}], example:[{t:'fixed',v:'git log -n '},{t:'var',v:'5'}], desc:"Show last N commits only" },
-    { parts:[{t:'fixed',v:'git log --author='},{t:'var',v:'"name"'}], example:[{t:'fixed',v:'git log --author='},{t:'var',v:'"John Doe"'}], desc:"Filter commits by author name" },
-    { parts:[{t:'fixed',v:'git diff'}], example:[{t:'fixed',v:'git diff'}], desc:"Show all unstaged file changes" },
-    { parts:[{t:'fixed',v:'git diff --staged'}], example:[{t:'fixed',v:'git diff --staged'}], desc:"Show changes staged for next commit" },
-    { parts:[{t:'fixed',v:'git diff '},{t:'var',v:'<branch1>'},{t:'fixed',v:'..'},{t:'var',v:'<branch2>'}], example:[{t:'fixed',v:'git diff '},{t:'var',v:'main'},{t:'fixed',v:'..'},{t:'var',v:'Task/login-page'}], desc:"Compare differences between two branches" },
-    { parts:[{t:'fixed',v:'git show '},{t:'var',v:'<commit-hash>'}], example:[{t:'fixed',v:'git show '},{t:'var',v:'a1b2c3d'}], desc:"Show details of a specific commit" },
-    { parts:[{t:'fixed',v:'git blame '},{t:'var',v:'<file>'}], example:[{t:'fixed',v:'git blame '},{t:'var',v:'src/LoginPage.jsx'}], desc:"Show who changed each line of a file" },
-  ]},
-  { icon:"💾", title:"Stash", commands:[
-    { parts:[{t:'fixed',v:'git stash'}], example:[{t:'fixed',v:'git stash'}], desc:"Save uncommitted changes to stash" },
-    { parts:[{t:'fixed',v:'git stash push -m '},{t:'var',v:'"label"'}], example:[{t:'fixed',v:'git stash push -m '},{t:'var',v:'"WIP: login form validation"'}], desc:"Stash with a descriptive label" },
-    { parts:[{t:'fixed',v:'git stash list'}], example:[{t:'fixed',v:'git stash list'}], desc:"List all saved stashes" },
-    { parts:[{t:'fixed',v:'git stash pop'}], example:[{t:'fixed',v:'git stash pop'}], desc:"Apply and remove the latest stash" },
-    { parts:[{t:'fixed',v:'git stash apply stash@{'},{t:'var',v:'n'},{t:'fixed',v:'}'}], example:[{t:'fixed',v:'git stash apply stash@{'},{t:'var',v:'2'},{t:'fixed',v:'}'}], desc:"Apply specific stash (keep it in list)" },
-    { parts:[{t:'fixed',v:'git stash drop stash@{'},{t:'var',v:'n'},{t:'fixed',v:'}'}], example:[{t:'fixed',v:'git stash drop stash@{'},{t:'var',v:'2'},{t:'fixed',v:'}'}], desc:"Delete a specific stash entry" },
-    { parts:[{t:'fixed',v:'git stash clear'}], example:[{t:'fixed',v:'git stash clear'}], desc:"Delete ALL stash entries", tag:"danger" },
-  ]},
-  { icon:"↩️", title:"Undo & Reset", commands:[
-    { parts:[{t:'fixed',v:'git restore '},{t:'var',v:'<file>'}], example:[{t:'fixed',v:'git restore '},{t:'var',v:'src/LoginPage.jsx'}], desc:"Discard working directory changes to a file" },
-    { parts:[{t:'fixed',v:'git restore --staged '},{t:'var',v:'<file>'}], example:[{t:'fixed',v:'git restore --staged '},{t:'var',v:'src/LoginPage.jsx'}], desc:"Unstage a file (changes kept)" },
-    { parts:[{t:'fixed',v:'git reset HEAD~'},{t:'var',v:'1'}], example:[{t:'fixed',v:'git reset HEAD~'},{t:'var',v:'1'}], desc:"Undo last commit — changes become unstaged" },
-    { parts:[{t:'fixed',v:'git reset --soft HEAD~'},{t:'var',v:'1'}], example:[{t:'fixed',v:'git reset --soft HEAD~'},{t:'var',v:'1'}], desc:"Undo last commit — changes stay staged" },
-    { parts:[{t:'fixed',v:'git reset --hard HEAD~'},{t:'var',v:'1'}], example:[{t:'fixed',v:'git reset --hard HEAD~'},{t:'var',v:'1'}], desc:"Undo commit AND destroy all changes", tag:"danger" },
-    { parts:[{t:'fixed',v:'git revert '},{t:'var',v:'<commit-hash>'}], example:[{t:'fixed',v:'git revert '},{t:'var',v:'a1b2c3d'}], desc:"Create new commit that undoes a past commit" },
-    { parts:[{t:'fixed',v:'git clean -fd'}], example:[{t:'fixed',v:'git clean -fd'}], desc:"Remove all untracked files and dirs", tag:"danger" },
-  ]},
-  { icon:"🏷️", title:"Tags", commands:[
-    { parts:[{t:'fixed',v:'git tag'}], example:[{t:'fixed',v:'git tag'}], desc:"List all existing tags" },
-    { parts:[{t:'fixed',v:'git tag '},{t:'var',v:'<tag-name>'}], example:[{t:'fixed',v:'git tag '},{t:'var',v:'v1.0.0'}], desc:"Create a lightweight tag on current commit" },
-    { parts:[{t:'fixed',v:'git tag -a '},{t:'var',v:'<tag>'},{t:'fixed',v:' -m '},{t:'var',v:'"message"'}], example:[{t:'fixed',v:'git tag -a '},{t:'var',v:'v1.0.0'},{t:'fixed',v:' -m '},{t:'var',v:'"Release 1.0.0"'}], desc:"Create annotated tag with message" },
-    { parts:[{t:'fixed',v:'git push origin '},{t:'var',v:'<tag>'}], example:[{t:'fixed',v:'git push origin '},{t:'var',v:'v1.0.0'}], desc:"Push a specific tag to remote" },
-    { parts:[{t:'fixed',v:'git push --tags'}], example:[{t:'fixed',v:'git push --tags'}], desc:"Push all local tags to remote" },
-    { parts:[{t:'fixed',v:'git tag -d '},{t:'var',v:'<tag>'}], example:[{t:'fixed',v:'git tag -d '},{t:'var',v:'v1.0.0'}], desc:"Delete a local tag" },
-    { parts:[{t:'fixed',v:'git push origin --delete '},{t:'var',v:'<tag>'}], example:[{t:'fixed',v:'git push origin --delete '},{t:'var',v:'v1.0.0'}], desc:"Delete a remote tag", tag:"danger" },
-  ]},
-];
-
-const dockerData = [
-  { icon:"🐳", title:"Images", commands:[
-    { parts:[{t:'fixed',v:'docker images'}], example:[{t:'fixed',v:'docker images'}], desc:"List all local images" },
-    { parts:[{t:'fixed',v:'docker pull '},{t:'var',v:'<image>'}], example:[{t:'fixed',v:'docker pull '},{t:'var',v:'node:18-alpine'}], desc:"Pull an image from Docker Hub" },
-    { parts:[{t:'fixed',v:'docker build -t '},{t:'var',v:'<name>'},{t:'fixed',v:' .'}], example:[{t:'fixed',v:'docker build -t '},{t:'var',v:'my-app'},{t:'fixed',v:' .'}], desc:"Build image from Dockerfile in current dir" },
-    { parts:[{t:'fixed',v:'docker build -t '},{t:'var',v:'<name>:<tag>'},{t:'fixed',v:' .'}], example:[{t:'fixed',v:'docker build -t '},{t:'var',v:'my-app:v1.0'},{t:'fixed',v:' .'}], desc:"Build with a specific version tag" },
-    { parts:[{t:'fixed',v:'docker build --no-cache -t '},{t:'var',v:'<name>'},{t:'fixed',v:' .'}], example:[{t:'fixed',v:'docker build --no-cache -t '},{t:'var',v:'my-app'},{t:'fixed',v:' .'}], desc:"Build without using layer cache" },
-    { parts:[{t:'fixed',v:'docker rmi '},{t:'var',v:'<image>'}], example:[{t:'fixed',v:'docker rmi '},{t:'var',v:'my-app:v1.0'}], desc:"Remove a specific image" },
-    { parts:[{t:'fixed',v:'docker image prune'}], example:[{t:'fixed',v:'docker image prune'}], desc:"Remove dangling (untagged) images" },
-    { parts:[{t:'fixed',v:'docker image prune -a'}], example:[{t:'fixed',v:'docker image prune -a'}], desc:"Remove all unused images", tag:"danger" },
-    { parts:[{t:'fixed',v:'docker tag '},{t:'var',v:'<source>'},{t:'fixed',v:' '},{t:'var',v:'<target>'}], example:[{t:'fixed',v:'docker tag '},{t:'var',v:'my-app:latest'},{t:'fixed',v:' '},{t:'var',v:'registry.io/org/my-app:v1.0'}], desc:"Tag image for registry push" },
-    { parts:[{t:'fixed',v:'docker push '},{t:'var',v:'<image>'}], example:[{t:'fixed',v:'docker push '},{t:'var',v:'registry.io/org/my-app:v1.0'}], desc:"Push image to a container registry" },
-    { parts:[{t:'fixed',v:'docker save -o '},{t:'var',v:'<file.tar>'},{t:'fixed',v:' '},{t:'var',v:'<image>'}], example:[{t:'fixed',v:'docker save -o '},{t:'var',v:'backup.tar'},{t:'fixed',v:' '},{t:'var',v:'my-app:latest'}], desc:"Export image to a tar archive" },
-    { parts:[{t:'fixed',v:'docker load -i '},{t:'var',v:'<file.tar>'}], example:[{t:'fixed',v:'docker load -i '},{t:'var',v:'backup.tar'}], desc:"Import image from tar archive" },
-    { parts:[{t:'fixed',v:'docker history '},{t:'var',v:'<image>'}], example:[{t:'fixed',v:'docker history '},{t:'var',v:'my-app:latest'}], desc:"Show image layer build history" },
-    { parts:[{t:'fixed',v:'docker inspect '},{t:'var',v:'<image>'}], example:[{t:'fixed',v:'docker inspect '},{t:'var',v:'my-app:latest'}], desc:"Inspect image metadata as JSON" },
-  ]},
-  { icon:"📦", title:"Containers — Run", commands:[
-    { parts:[{t:'fixed',v:'docker run '},{t:'var',v:'<image>'}], example:[{t:'fixed',v:'docker run '},{t:'var',v:'nginx'}], desc:"Run a container from an image" },
-    { parts:[{t:'fixed',v:'docker run -d '},{t:'var',v:'<image>'}], example:[{t:'fixed',v:'docker run -d '},{t:'var',v:'nginx'}], desc:"Run container in background (detached)" },
-    { parts:[{t:'fixed',v:'docker run -it '},{t:'var',v:'<image>'},{t:'fixed',v:' bash'}], example:[{t:'fixed',v:'docker run -it '},{t:'var',v:'ubuntu'},{t:'fixed',v:' bash'}], desc:"Run with interactive terminal shell" },
-    { parts:[{t:'fixed',v:'docker run --name '},{t:'var',v:'<name>'},{t:'fixed',v:' '},{t:'var',v:'<image>'}], example:[{t:'fixed',v:'docker run --name '},{t:'var',v:'login-service'},{t:'fixed',v:' '},{t:'var',v:'my-app:latest'}], desc:"Assign a custom name to the container" },
-    { parts:[{t:'fixed',v:'docker run -p '},{t:'var',v:'<host>'},{t:'fixed',v:':'},{t:'var',v:'<container>'},{t:'fixed',v:' '},{t:'var',v:'<image>'}], example:[{t:'fixed',v:'docker run -p '},{t:'var',v:'3000'},{t:'fixed',v:':'},{t:'var',v:'80'},{t:'fixed',v:' '},{t:'var',v:'my-app'}], desc:"Map host port to container port" },
-    { parts:[{t:'fixed',v:'docker run -v '},{t:'var',v:'<host-path>'},{t:'fixed',v:':'},{t:'var',v:'<ctr-path>'},{t:'fixed',v:' '},{t:'var',v:'<image>'}], example:[{t:'fixed',v:'docker run -v '},{t:'var',v:'./data'},{t:'fixed',v:':'},{t:'var',v:'/app/data'},{t:'fixed',v:' '},{t:'var',v:'my-app'}], desc:"Mount a host directory as volume" },
-    { parts:[{t:'fixed',v:'docker run -e '},{t:'var',v:'KEY'},{t:'fixed',v:'='},{t:'var',v:'value'},{t:'fixed',v:' '},{t:'var',v:'<image>'}], example:[{t:'fixed',v:'docker run -e '},{t:'var',v:'NODE_ENV'},{t:'fixed',v:'='},{t:'var',v:'production'},{t:'fixed',v:' '},{t:'var',v:'my-app'}], desc:"Set an environment variable" },
-    { parts:[{t:'fixed',v:'docker run --env-file '},{t:'var',v:'<file>'},{t:'fixed',v:' '},{t:'var',v:'<image>'}], example:[{t:'fixed',v:'docker run --env-file '},{t:'var',v:'.env'},{t:'fixed',v:' '},{t:'var',v:'my-app'}], desc:"Load env vars from a file" },
-    { parts:[{t:'fixed',v:'docker run --rm '},{t:'var',v:'<image>'}], example:[{t:'fixed',v:'docker run --rm '},{t:'var',v:'my-app'}], desc:"Auto-remove container when it exits" },
-    { parts:[{t:'fixed',v:'docker run -m '},{t:'var',v:'<memory>'},{t:'fixed',v:' '},{t:'var',v:'<image>'}], example:[{t:'fixed',v:'docker run -m '},{t:'var',v:'512m'},{t:'fixed',v:' '},{t:'var',v:'my-app'}], desc:"Limit container memory" },
-  ]},
-  { icon:"⚙️", title:"Containers — Manage", commands:[
-    { parts:[{t:'fixed',v:'docker ps'}], example:[{t:'fixed',v:'docker ps'}], desc:"List running containers" },
-    { parts:[{t:'fixed',v:'docker ps -a'}], example:[{t:'fixed',v:'docker ps -a'}], desc:"List all containers including stopped" },
-    { parts:[{t:'fixed',v:'docker start '},{t:'var',v:'<container>'}], example:[{t:'fixed',v:'docker start '},{t:'var',v:'login-service'}], desc:"Start a stopped container" },
-    { parts:[{t:'fixed',v:'docker stop '},{t:'var',v:'<container>'}], example:[{t:'fixed',v:'docker stop '},{t:'var',v:'login-service'}], desc:"Gracefully stop a container" },
-    { parts:[{t:'fixed',v:'docker restart '},{t:'var',v:'<container>'}], example:[{t:'fixed',v:'docker restart '},{t:'var',v:'login-service'}], desc:"Restart a container" },
-    { parts:[{t:'fixed',v:'docker kill '},{t:'var',v:'<container>'}], example:[{t:'fixed',v:'docker kill '},{t:'var',v:'login-service'}], desc:"Force-kill a container immediately", tag:"danger" },
-    { parts:[{t:'fixed',v:'docker rm '},{t:'var',v:'<container>'}], example:[{t:'fixed',v:'docker rm '},{t:'var',v:'login-service'}], desc:"Remove a stopped container" },
-    { parts:[{t:'fixed',v:'docker rm -f '},{t:'var',v:'<container>'}], example:[{t:'fixed',v:'docker rm -f '},{t:'var',v:'login-service'}], desc:"Force-remove a running container", tag:"danger" },
-    { parts:[{t:'fixed',v:'docker rename '},{t:'var',v:'<old>'},{t:'fixed',v:' '},{t:'var',v:'<new>'}], example:[{t:'fixed',v:'docker rename '},{t:'var',v:'login-service'},{t:'fixed',v:' '},{t:'var',v:'auth-service'}], desc:"Rename a container" },
-    { parts:[{t:'fixed',v:'docker update --cpus '},{t:'var',v:'<n>'},{t:'fixed',v:' '},{t:'var',v:'<container>'}], example:[{t:'fixed',v:'docker update --cpus '},{t:'var',v:'1'},{t:'fixed',v:' '},{t:'var',v:'login-service'}], desc:"Update CPU limit of running container" },
-  ]},
-  { icon:"🔍", title:"Logs & Inspection", commands:[
-    { parts:[{t:'fixed',v:'docker logs '},{t:'var',v:'<container>'}], example:[{t:'fixed',v:'docker logs '},{t:'var',v:'login-service'}], desc:"View all container logs" },
-    { parts:[{t:'fixed',v:'docker logs -f '},{t:'var',v:'<container>'}], example:[{t:'fixed',v:'docker logs -f '},{t:'var',v:'login-service'}], desc:"Follow / stream live logs" },
-    { parts:[{t:'fixed',v:'docker logs --tail '},{t:'var',v:'<N>'},{t:'fixed',v:' '},{t:'var',v:'<container>'}], example:[{t:'fixed',v:'docker logs --tail '},{t:'var',v:'100'},{t:'fixed',v:' '},{t:'var',v:'login-service'}], desc:"Show last N lines of logs" },
-    { parts:[{t:'fixed',v:'docker inspect '},{t:'var',v:'<container>'}], example:[{t:'fixed',v:'docker inspect '},{t:'var',v:'login-service'}], desc:"Full container info as JSON" },
-    { parts:[{t:'fixed',v:'docker stats'}], example:[{t:'fixed',v:'docker stats'}], desc:"Live CPU/memory usage of all containers" },
-    { parts:[{t:'fixed',v:'docker top '},{t:'var',v:'<container>'}], example:[{t:'fixed',v:'docker top '},{t:'var',v:'login-service'}], desc:"List processes running inside container" },
-    { parts:[{t:'fixed',v:'docker port '},{t:'var',v:'<container>'}], example:[{t:'fixed',v:'docker port '},{t:'var',v:'login-service'}], desc:"Show port mappings of container" },
-    { parts:[{t:'fixed',v:'docker diff '},{t:'var',v:'<container>'}], example:[{t:'fixed',v:'docker diff '},{t:'var',v:'login-service'}], desc:"Show filesystem changes in container" },
-  ]},
-  { icon:"💻", title:"Exec & Copy", commands:[
-    { parts:[{t:'fixed',v:'docker exec -it '},{t:'var',v:'<container>'},{t:'fixed',v:' bash'}], example:[{t:'fixed',v:'docker exec -it '},{t:'var',v:'login-service'},{t:'fixed',v:' bash'}], desc:"Open interactive bash shell inside container" },
-    { parts:[{t:'fixed',v:'docker exec -it '},{t:'var',v:'<container>'},{t:'fixed',v:' sh'}], example:[{t:'fixed',v:'docker exec -it '},{t:'var',v:'login-service'},{t:'fixed',v:' sh'}], desc:"Open sh shell (use for Alpine images)" },
-    { parts:[{t:'fixed',v:'docker exec '},{t:'var',v:'<container>'},{t:'fixed',v:' '},{t:'var',v:'<command>'}], example:[{t:'fixed',v:'docker exec '},{t:'var',v:'login-service'},{t:'fixed',v:' '},{t:'var',v:'node --version'}], desc:"Run a one-off command inside container" },
-    { parts:[{t:'fixed',v:'docker cp '},{t:'var',v:'<container>'},{t:'fixed',v:':'},{t:'var',v:'<path>'},{t:'fixed',v:' '},{t:'var',v:'<local>'}], example:[{t:'fixed',v:'docker cp '},{t:'var',v:'login-service'},{t:'fixed',v:':'},{t:'var',v:'/app/logs'},{t:'fixed',v:' '},{t:'var',v:'./logs'}], desc:"Copy files from container to host" },
-    { parts:[{t:'fixed',v:'docker cp '},{t:'var',v:'<local>'},{t:'fixed',v:' '},{t:'var',v:'<container>'},{t:'fixed',v:':'},{t:'var',v:'<path>'}], example:[{t:'fixed',v:'docker cp '},{t:'var',v:'./config.json'},{t:'fixed',v:' '},{t:'var',v:'login-service'},{t:'fixed',v:':'},{t:'var',v:'/app/config.json'}], desc:"Copy files from host to container" },
-    { parts:[{t:'fixed',v:'docker commit '},{t:'var',v:'<container>'},{t:'fixed',v:' '},{t:'var',v:'<image:tag>'}], example:[{t:'fixed',v:'docker commit '},{t:'var',v:'login-service'},{t:'fixed',v:' '},{t:'var',v:'my-app:snapshot'}], desc:"Create image from a container's state" },
-  ]},
-  { icon:"🔗", title:"Networks", commands:[
-    { parts:[{t:'fixed',v:'docker network ls'}], example:[{t:'fixed',v:'docker network ls'}], desc:"List all Docker networks" },
-    { parts:[{t:'fixed',v:'docker network create '},{t:'var',v:'<name>'}], example:[{t:'fixed',v:'docker network create '},{t:'var',v:'app-network'}], desc:"Create a custom bridge network" },
-    { parts:[{t:'fixed',v:'docker network inspect '},{t:'var',v:'<name>'}], example:[{t:'fixed',v:'docker network inspect '},{t:'var',v:'app-network'}], desc:"Inspect network details as JSON" },
-    { parts:[{t:'fixed',v:'docker network connect '},{t:'var',v:'<network>'},{t:'fixed',v:' '},{t:'var',v:'<container>'}], example:[{t:'fixed',v:'docker network connect '},{t:'var',v:'app-network'},{t:'fixed',v:' '},{t:'var',v:'login-service'}], desc:"Connect a container to a network" },
-    { parts:[{t:'fixed',v:'docker network disconnect '},{t:'var',v:'<network>'},{t:'fixed',v:' '},{t:'var',v:'<container>'}], example:[{t:'fixed',v:'docker network disconnect '},{t:'var',v:'app-network'},{t:'fixed',v:' '},{t:'var',v:'login-service'}], desc:"Disconnect container from a network" },
-    { parts:[{t:'fixed',v:'docker network rm '},{t:'var',v:'<name>'}], example:[{t:'fixed',v:'docker network rm '},{t:'var',v:'app-network'}], desc:"Remove a network" },
-    { parts:[{t:'fixed',v:'docker network prune'}], example:[{t:'fixed',v:'docker network prune'}], desc:"Remove all unused networks" },
-  ]},
-  { icon:"💾", title:"Volumes", commands:[
-    { parts:[{t:'fixed',v:'docker volume ls'}], example:[{t:'fixed',v:'docker volume ls'}], desc:"List all volumes" },
-    { parts:[{t:'fixed',v:'docker volume create '},{t:'var',v:'<name>'}], example:[{t:'fixed',v:'docker volume create '},{t:'var',v:'app-data'}], desc:"Create a named volume" },
-    { parts:[{t:'fixed',v:'docker volume inspect '},{t:'var',v:'<name>'}], example:[{t:'fixed',v:'docker volume inspect '},{t:'var',v:'app-data'}], desc:"Inspect a volume's details" },
-    { parts:[{t:'fixed',v:'docker volume rm '},{t:'var',v:'<name>'}], example:[{t:'fixed',v:'docker volume rm '},{t:'var',v:'app-data'}], desc:"Remove a specific volume" },
-    { parts:[{t:'fixed',v:'docker volume prune'}], example:[{t:'fixed',v:'docker volume prune'}], desc:"Remove all unused volumes", tag:"danger" },
-  ]},
-  { icon:"🧹", title:"System & Cleanup", commands:[
-    { parts:[{t:'fixed',v:'docker system df'}], example:[{t:'fixed',v:'docker system df'}], desc:"Show disk usage by Docker" },
-    { parts:[{t:'fixed',v:'docker system info'}], example:[{t:'fixed',v:'docker system info'}], desc:"Display Docker system-wide info" },
-    { parts:[{t:'fixed',v:'docker system prune'}], example:[{t:'fixed',v:'docker system prune'}], desc:"Remove stopped containers, unused networks, dangling images" },
-    { parts:[{t:'fixed',v:'docker system prune -a'}], example:[{t:'fixed',v:'docker system prune -a'}], desc:"Remove everything unused including images", tag:"danger" },
-    { parts:[{t:'fixed',v:'docker system prune --volumes'}], example:[{t:'fixed',v:'docker system prune --volumes'}], desc:"Prune including volumes", tag:"danger" },
-    { parts:[{t:'fixed',v:'docker container prune'}], example:[{t:'fixed',v:'docker container prune'}], desc:"Remove all stopped containers" },
-    { parts:[{t:'fixed',v:'docker image prune -a'}], example:[{t:'fixed',v:'docker image prune -a'}], desc:"Remove all unused images", tag:"danger" },
-  ]},
-  { icon:"🎼", title:"Docker Compose", commands:[
-    { parts:[{t:'fixed',v:'docker compose up'}], example:[{t:'fixed',v:'docker compose up'}], desc:"Start all services in compose file" },
-    { parts:[{t:'fixed',v:'docker compose up -d'}], example:[{t:'fixed',v:'docker compose up -d'}], desc:"Start all services in detached mode" },
-    { parts:[{t:'fixed',v:'docker compose up --build'}], example:[{t:'fixed',v:'docker compose up --build'}], desc:"Rebuild images before starting" },
-    { parts:[{t:'fixed',v:'docker compose down'}], example:[{t:'fixed',v:'docker compose down'}], desc:"Stop and remove all containers" },
-    { parts:[{t:'fixed',v:'docker compose down -v'}], example:[{t:'fixed',v:'docker compose down -v'}], desc:"Down and also remove all volumes", tag:"danger" },
-    { parts:[{t:'fixed',v:'docker compose ps'}], example:[{t:'fixed',v:'docker compose ps'}], desc:"List status of all services" },
-    { parts:[{t:'fixed',v:'docker compose logs -f'}], example:[{t:'fixed',v:'docker compose logs -f'}], desc:"Follow live logs from all services" },
-    { parts:[{t:'fixed',v:'docker compose exec '},{t:'var',v:'<service>'},{t:'fixed',v:' sh'}], example:[{t:'fixed',v:'docker compose exec '},{t:'var',v:'api'},{t:'fixed',v:' sh'}], desc:"Shell into a running compose service" },
-    { parts:[{t:'fixed',v:'docker compose logs '},{t:'var',v:'<service>'}], example:[{t:'fixed',v:'docker compose logs '},{t:'var',v:'api'}], desc:"View logs of a specific service" },
-    { parts:[{t:'fixed',v:'docker compose restart '},{t:'var',v:'<service>'}], example:[{t:'fixed',v:'docker compose restart '},{t:'var',v:'api'}], desc:"Restart a specific service" },
-    { parts:[{t:'fixed',v:'docker compose stop '},{t:'var',v:'<service>'}], example:[{t:'fixed',v:'docker compose stop '},{t:'var',v:'api'}], desc:"Stop a specific service" },
-    { parts:[{t:'fixed',v:'docker compose build '},{t:'var',v:'<service>'}], example:[{t:'fixed',v:'docker compose build '},{t:'var',v:'api'}], desc:"Build image for a specific service" },
-    { parts:[{t:'fixed',v:'docker compose scale '},{t:'var',v:'<service>'},{t:'fixed',v:'='},{t:'var',v:'<N>'}], example:[{t:'fixed',v:'docker compose scale '},{t:'var',v:'api'},{t:'fixed',v:'='},{t:'var',v:'3'}], desc:"Scale a service to N replicas" },
-    { parts:[{t:'fixed',v:'docker compose config'}], example:[{t:'fixed',v:'docker compose config'}], desc:"Validate and view compose config" },
-  ]},
-];
-
-function partsToText(parts) { return parts.map(p=>p.v).join(''); }
-
-function renderParts(parts) {
-  return parts.map(p =>
-    p.t === 'var'
-      ? `<span class="cmd-var">${p.v}</span>`
-      : `<span class="cmd-fixed">${p.v}</span>`
-  ).join('');
-}
-
-function renderExample(parts) {
-  return parts.map(p =>
-    p.t === 'var'
-      ? `<span class="ex-var">${p.v}</span>`
-      : `<span class="ex-fixed">${p.v}</span>`
-  ).join('');
-}
-
-function buildGrid(data, gridId) {
-  const grid = document.getElementById(gridId);
-  data.forEach(cat => {
-    const card = document.createElement('div');
-    card.className = 'category-card';
-    const header = `<div class="card-header"><span class="card-icon">${cat.icon}</span><span class="card-title">${cat.title}</span></div>`;
-    const cmds = cat.commands.map(c => {
-      const raw = partsToText(c.parts).replace(/\\/g,'\\\\').replace(/'/g,"\\'");
-      const tag = c.tag ? `<span class="tag tag-${c.tag}">${c.tag}</span>` : '';
-      return `<div class="command-item" onclick="copyCmd('${raw}')">
-        <div class="cmd-line">${renderParts(c.parts)}${tag}</div>
-        <div class="cmd-example"><span class="eg-label">eg →</span>${renderExample(c.example)}</div>
-        <div class="cmd-desc">// ${c.desc}</div>
-      </div>`;
-    }).join('');
-    card.innerHTML = header + `<div class="command-list">${cmds}</div>`;
-    grid.appendChild(card);
+  // Init counts
+  ['linux','docker','git'].forEach(t=>{
+    document.getElementById(t+'-count').textContent=document.querySelectorAll('#'+t+'-tab .cmd-card').length;
   });
-}
 
-function showTab(tab, btn) {
-  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
-  document.querySelectorAll('.tab-btn').forEach(b=>b.className='tab-btn');
-  document.getElementById(tab+'-section').classList.add('active');
-  btn.className=`tab-btn active-${tab}`;
-}
+  // Switch tab
+  function switchTab(tab){
+    document.querySelectorAll('.tab-btn,.bn-btn').forEach(b=>b.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(c=>c.classList.remove('active'));
+    document.querySelectorAll('[data-tab="'+tab+'"]').forEach(b=>b.classList.add('active'));
+    document.getElementById(tab+'-tab').classList.add('active');
+    const si=document.getElementById('searchInput');
+    si.value='';
+    document.querySelectorAll('.no-results').forEach(e=>e.classList.remove('show'));
+    document.querySelectorAll('.cmd-card').forEach(e=>e.style.display='');
+    ['linux','docker','git'].forEach(t=>{
+      document.getElementById(t+'-count').textContent=document.querySelectorAll('#'+t+'-tab .cmd-card').length;
+    });
+    window.scrollTo({top:0,behavior:'smooth'});
+  }
+  document.querySelectorAll('.tab-btn,.bn-btn').forEach(b=>b.addEventListener('click',()=>switchTab(b.dataset.tab)));
 
-function copyCmd(cmd) {
-  navigator.clipboard.writeText(cmd).then(()=>{
-    const t=document.getElementById('toast');
-    t.classList.add('show');
-    setTimeout(()=>t.classList.remove('show'),1800);
+  // Search
+  document.getElementById('searchInput').addEventListener('input',function(){
+    const q=this.value.toLowerCase().trim();
+    const at=document.querySelector('.tab-content.active');
+    const tn=at.id.replace('-tab','');
+    const cards=at.querySelectorAll('.cmd-card');
+    let v=0;
+    cards.forEach(c=>{
+      const m=!q||c.textContent.toLowerCase().includes(q);
+      c.style.display=m?'':'none';
+      if(m)v++;
+    });
+    document.getElementById(tn+'-count').textContent=q?v:cards.length;
+    at.querySelector('.no-results').classList.toggle('show',v===0&&q.length>0);
   });
-}
 
-function filterCommands(q) {
-  q=q.toLowerCase();
-  document.querySelectorAll('.command-item').forEach(i=>{
-    i.style.display=i.textContent.toLowerCase().includes(q)?'':'none';
-  });
-  document.querySelectorAll('.category-card').forEach(c=>{
-    c.style.display=[...c.querySelectorAll('.command-item')].some(i=>i.style.display!=='none')?'':'none';
-  });
-}
-
-buildGrid(gitData,'git-grid');
-buildGrid(dockerData,'docker-grid');
+  // Copy
+  function cp(btn,text){
+    const fb=()=>{const ta=document.createElement('textarea');ta.value=text;ta.style.cssText='position:fixed;opacity:0';document.body.appendChild(ta);ta.select();try{document.execCommand('copy')}catch(e){}document.body.removeChild(ta)};
+    if(navigator.clipboard){navigator.clipboard.writeText(text).catch(fb)}else{fb()}
+    btn.textContent='✓';btn.classList.add('copied');
+    setTimeout(()=>{btn.textContent='copy';btn.classList.remove('copied')},1800);
+  }
 </script>
 </body>
 </html>
